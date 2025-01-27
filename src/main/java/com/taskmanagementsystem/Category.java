@@ -3,22 +3,22 @@ package com.taskmanagementsystem;
 import java.util.UUID;
 
 /**
- * Represents a Priority level (e.g., "Default", "High", "Low").
+ * Represents a Category (e.g., "Work", "Personal").
  */
-public class Priority {
+public class Category {
     private String id;
     private String name;
 
     // Empty constructor for JSON
-    public Priority() {
+    public Category() {
     }
 
-    public Priority(String name) {
+    public Category(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
     }
 
-    public Priority(String id, String name) {
+    public Category(String id, String name) {
         this.id = id;
         this.name = name;
     }

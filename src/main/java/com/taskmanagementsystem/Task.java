@@ -1,31 +1,43 @@
 package com.taskmanagementsystem;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
+/**
+ * Represents a Task with title, description, category, priority, deadline and status.
+ */
 public class Task {
+    private String id;
     private String title;
     private String description;
-    private String category;   // π.χ. "Work", "Personal", κ.λπ.
-    private String priority;   // π.χ. "Low", "Medium", "High"
+    private String categoryId;   // foreign key to Category
+    private String priorityId;   // foreign key to Priority
     private LocalDate deadline;
-    private String status;     // "Open", "In Progress", "Postponed", "Completed", "Delayed"
+    private TaskStatus status;   // One of {OPEN, IN_PROGRESS, POSTPONED, COMPLETED, DELAYED}
 
+    // Empty constructor for JSON
     public Task() {
-        // Απαιτείται κενός constructor για Jackson (JSON)
     }
 
-    public Task(String title, String description, String category, String priority, LocalDate deadline) {
+    public Task(String title, String description, String categoryId, String priorityId, LocalDate deadline) {
+        this.id = UUID.randomUUID().toString();
         this.title = title;
         this.description = description;
-        this.category = category;
-        this.priority = priority;
+        this.categoryId = categoryId;
+        this.priorityId = priorityId;
         this.deadline = deadline;
-        this.status = "Open"; // Default status
+        this.status = TaskStatus.OPEN;
     }
 
-    // -----------------------------------------
     // Getters / Setters
-    // -----------------------------------------
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -42,20 +54,20 @@ public class Task {
         this.description = description;
     }
 
-    public String getCategory() {
-        return category;
+    public String getCategoryId() {
+        return categoryId;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategoryId(String categoryId) {
+        this.categoryId = categoryId;
     }
 
-    public String getPriority() {
-        return priority;
+    public String getPriorityId() {
+        return priorityId;
     }
 
-    public void setPriority(String priority) {
-        this.priority = priority;
+    public void setPriorityId(String priorityId) {
+        this.priorityId = priorityId;
     }
 
     public LocalDate getDeadline() {
@@ -66,22 +78,21 @@ public class Task {
         this.deadline = deadline;
     }
 
-    public String getStatus() {
+    public TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(TaskStatus status) {
         this.status = status;
     }
 
     /**
-     * Αν δεν είναι Completed και έχει περάσει η ημερομηνία deadline,
-     * ορίζει αυτόματα το status σε "Delayed".
+     * If the task is not COMPLETED and the deadline is in the past, set it to DELAYED.
      */
-    public void updateStatusIfDelayed() {
-        if (!"Completed".equals(this.status) && deadline != null) {
-            if (LocalDate.now().isAfter(deadline)) {
-                this.status = "Delayed";
+    public void checkIfShouldBeDelayed() {
+        if (status != TaskStatus.COMPLETED && deadline != null) {
+            if (deadline.isBefore(LocalDate.now())) {
+                this.status = TaskStatus.DELAYED;
             }
         }
     }

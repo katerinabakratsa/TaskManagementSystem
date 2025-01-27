@@ -1,35 +1,50 @@
 package com.taskmanagementsystem;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
+/**
+ * Represents a Reminder, which is always linked to a specific Task.
+ */
 public class Reminder {
-    private Task task;        // Η εργασία για την οποία ορίζεται η υπενθύμιση
-    private String type;      // π.χ. "1 day before", "1 week before", "Custom date"
+    private String id;
+    private String taskId;      // foreign key to Task
+    private ReminderType type;  // ONE_DAY_BEFORE, ...
     private LocalDate reminderDate;
 
+    // Empty constructor for JSON
     public Reminder() {
-        // Απαιτείται κενός constructor για Jackson (JSON)
     }
 
-    public Reminder(Task task, String type, LocalDate reminderDate) {
-        this.task = task;
+    public Reminder(String taskId, ReminderType type, LocalDate reminderDate) {
+        this.id = UUID.randomUUID().toString();
+        this.taskId = taskId;
         this.type = type;
         this.reminderDate = reminderDate;
     }
 
-    public Task getTask() {
-        return task;
+    // Getters / Setters
+    public String getId() {
+        return id;
     }
 
-    public void setTask(Task task) {
-        this.task = task;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public String getType() {
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(String taskId) {
+        this.taskId = taskId;
+    }
+
+    public ReminderType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ReminderType type) {
         this.type = type;
     }
 

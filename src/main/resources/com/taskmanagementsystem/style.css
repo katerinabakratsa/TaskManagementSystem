@@ -1,0 +1,40 @@
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-background-color: #f6f9fc; /* ανοιχτό, παστέλ background */
+}
+
+.label {
+    -fx-font-size: 14px;
+}
+
+.tab-pane {
+    -fx-background-color: #ffffff;
+}
+
+.tab-header-background {
+    -fx-background-color: #d0ebff; /* απαλό μπλε */
+}
+
+.button {
+    -fx-background-color: #aedff7; /* παστέλ γαλάζιο */
+    -fx-text-fill: #003366;
+    -fx-font-weight: bold;
+}
+
+.table-view {
+    -fx-background-color: #ffffff;
+    -fx-selection-bar: #cfe2f3;   /* παστέλ μπλε σε επιλεγμένες γραμμές */
+    -fx-selection-bar-text: #000000;
+}
+
+.text-field, .date-picker, .combo-box {
+    -fx-background-color: #ffffff, linear-gradient(to bottom, derive(#ffffff,5%), derive(#ffffff,-10%)), linear-gradient(to bottom, derive(#ffffff,5%), derive(#ffffff,-10%));
+    -fx-background-insets: 0,1,2;
+    -fx-background-radius: 3,2,1;
+}
+
+.list-view {
+    -fx-background-color: #ffffff;
+    -fx-selection-bar: #cfe2f3;
+    -fx-selection-bar-text: #000000;
+}
