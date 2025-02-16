@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -56,7 +57,7 @@ public class MainApplication extends Application {
 
     
     // TOP: summary info
-       HBox topBox = createTopBox();
+       VBox topBox = createTopBox();
        root.setTop(topBox);
 
     // CENTER: TabPane με όλες τις καρτέλες
@@ -92,16 +93,36 @@ public class MainApplication extends Application {
     // ---------------------------------------------------------------
     // TOP BOX
     // ---------------------------------------------------------------
-    private HBox createTopBox() {
-        HBox box = new HBox(30);
-        box.setPadding(new Insets(10));
+    private VBox createTopBox() {
+       
+        Label lblTitle = new Label("MediaLab Assistant");
+        lblTitle.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;"); // ✅ Μωβ χρώμα & bold
+      
         lblTotalTasks = new Label("Total tasks: 0");
         lblCompletedTasks = new Label("Completed tasks: 0");
         lblDelayedTasks = new Label("Delayed tasks: 0");
         lblDeadline7Days = new Label("Due <= 7 days: 0");
 
-        box.getChildren().addAll(lblTotalTasks, lblCompletedTasks, lblDelayedTasks, lblDeadline7Days);
-        return box;
+        // ✅ Μείωση μεγέθους για να ταιριάζει καλύτερα οπτικά
+        String counterStyle = "-fx-font-size: 14px; -fx-font-weight: bold;";
+        lblTotalTasks.setStyle(counterStyle);
+        lblCompletedTasks.setStyle(counterStyle);
+        lblDelayedTasks.setStyle(counterStyle);
+        lblDeadline7Days.setStyle(counterStyle);
+
+        // ✅ Ομαδοποίηση των counters σε ένα οριζόντιο HBox
+    HBox countersBox = new HBox(20, lblTotalTasks, lblCompletedTasks, lblDelayedTasks, lblDeadline7Days);
+    countersBox.setAlignment(Pos.CENTER);
+
+    // ✅ Δημιουργία του VBox που περιέχει τον τίτλο και τα counters
+    VBox topBox = new VBox();
+    topBox.setSpacing(5); // Μικρή απόσταση μεταξύ τίτλου και counters
+    topBox.setPadding(new Insets(10));
+    topBox.setAlignment(Pos.CENTER); // ✅ Κεντράρουμε το περιεχόμενο
+    topBox.getChildren().addAll(lblTitle, countersBox);
+
+    return topBox;
+
     }
 
     private void updateSummaryInfo() {
