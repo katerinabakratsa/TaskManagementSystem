@@ -40,4 +40,23 @@ public class ConverterUtils {
             }
         };
     }
+
+    /**
+ * Returns a StringConverter for Task objects, displaying task.getTitle().
+ */
+    public static StringConverter<Task> getTaskConverter() {
+        return new StringConverter<>() {
+            @Override
+            public String toString(Task object) {
+                if (object == null) return "";
+                return object.getTitle();
+            }
+
+            @Override
+            public Task fromString(String string) {
+                return null;
+            }
+        };
+    }
+
 }

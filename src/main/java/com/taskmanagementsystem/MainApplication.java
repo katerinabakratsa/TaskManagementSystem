@@ -1,6 +1,7 @@
 package com.taskmanagementsystem;
 
 import javafx.application.Application;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -9,13 +10,11 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
-import com.taskmanagementsystem.ui.AnimatedBackground;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import com.taskmanagementsystem.ConverterUtils;
 
-import com.AnimatedBackground;
 
 /**
  * Main JavaFX Application that sets up the UI with TabPane for Tasks, Categories, Priorities, Reminders, Search.
@@ -382,6 +381,19 @@ public class MainApplication extends Application {
             updateSummaryInfo();
         });
 
+
+
+        // 🔹 Listener: Αν η επιλεγμένη προτεραιότητα είναι "Default", τα κουμπιά εξαφανίζονται!
+        listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && newVal.getName().equalsIgnoreCase("Default")) {
+                btnRename.setVisible(false);
+                btnDelete.setVisible(false);
+            } else {
+                btnRename.setVisible(true);
+                btnDelete.setVisible(true);
+            }
+        });
+
         formBox.getChildren().addAll(new Label("Priority:"), txtPrioName,
                 new HBox(10, btnAdd, btnRename, btnDelete));
 
@@ -395,56 +407,150 @@ public class MainApplication extends Application {
     // TAB 4: REMINDERS
     // ---------------------------------------------------------------
     private Pane createRemindersPane() {
-        BorderPane pane = new BorderPane();
-        pane.setPadding(new Insets(10));
+    BorderPane pane = new BorderPane();
+    pane.setPadding(new Insets(10));
 
-        TableView<Reminder> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    // Πίνακας Υπενθυμίσεων
+    TableView<Reminder> table = new TableView<>();
+    table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+    table.getStyleClass().add("table-view"); // Προσθήκη ίδιου στυλ με τα Tasks
 
-        TableColumn<Reminder, String> colTaskId = new TableColumn<>("Task Title");
-        colTaskId.setCellValueFactory(cell -> {
-            String taskId = cell.getValue().getTaskId();
-            Task t = dataManager.getAllTasks().stream()
-                    .filter(x -> x.getId().equals(taskId))
-                    .findFirst().orElse(null);
-            if (t != null) {
-                return new javafx.beans.property.SimpleStringProperty(t.getTitle());
-            } else {
-                return new javafx.beans.property.SimpleStringProperty("N/A");
-            }
-        });
+    TableColumn<Reminder, String> colTaskTitle = new TableColumn<>("Task Title");
+    colTaskTitle.setCellValueFactory(cell -> {
+        String taskId = cell.getValue().getTaskId();
+        Task task = dataManager.getAllTasks().stream()
+                .filter(t -> t.getId().equals(taskId))
+                .findFirst().orElse(null);
+        return new SimpleStringProperty(task != null ? task.getTitle() : "N/A");
+    });
 
-        TableColumn<Reminder, ReminderType> colType = new TableColumn<>("Type");
-        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+    TableColumn<Reminder, ReminderType> colType = new TableColumn<>("Type");
+    colType.setCellValueFactory(new PropertyValueFactory<>("type"));
 
-        TableColumn<Reminder, String> colDate = new TableColumn<>("Reminder Date");
-        colDate.setCellValueFactory(cell -> {
-            LocalDate d = cell.getValue().getReminderDate();
-            return new javafx.beans.property.SimpleStringProperty(d != null ? d.toString() : "");
-        });
+    TableColumn<Reminder, String> colDate = new TableColumn<>("Reminder Date");
+    colDate.setCellValueFactory(cell -> {
+        LocalDate date = cell.getValue().getReminderDate();
+        return new SimpleStringProperty(date != null ? date.toString() : "N/A");
+    });
 
-        table.getColumns().addAll(colTaskId, colType, colDate);
+    table.getColumns().addAll(colTaskTitle, colType, colDate);
+    table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
 
-        table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
+    // Φόρμα Προσθήκης Υπενθύμισης
+    VBox formBox = new VBox(10);
+    formBox.setPadding(new Insets(5));
 
-        // Delete button
-        Button btnDeleteReminder = new Button("Delete Reminder");
-        btnDeleteReminder.setOnAction(e -> {
-            Reminder selected = table.getSelectionModel().getSelectedItem();
-            if (selected == null) {
-                showAlert("Warning", "Select a reminder first.");
-                return;
-            }
-            dataManager.deleteReminder(selected);
+    ComboBox<Task> cmbTask = new ComboBox<>(FXCollections.observableArrayList(dataManager.getAllTasks()));
+    cmbTask.setPromptText("Select Task");
+    cmbTask.setConverter(ConverterUtils.getTaskConverter());
+
+    ComboBox<ReminderType> cmbType = new ComboBox<>(FXCollections.observableArrayList(ReminderType.values()));
+    cmbType.setPromptText("Select Reminder Type");
+
+    DatePicker dpCustomDate = new DatePicker();
+    dpCustomDate.setPromptText("Select Date");
+    dpCustomDate.setDisable(true); // Αρχικά απενεργοποιημένο
+
+    // Αν επιλεγεί "SPECIFIC_DATE", ενεργοποιούμε το DatePicker
+    cmbType.setOnAction(e -> {
+        if (cmbType.getValue() == ReminderType.SPECIFIC_DATE) {
+            dpCustomDate.setDisable(false);
+        } else {
+            dpCustomDate.setDisable(true);
+            dpCustomDate.setValue(null); // Καθαρίζουμε την επιλογή
+        }
+    });
+
+    Button btnAdd = new Button("Add Reminder");
+    btnAdd.setOnAction(e -> {
+        Task selectedTask = cmbTask.getValue();
+        ReminderType selectedType = cmbType.getValue();
+        LocalDate selectedDate = dpCustomDate.getValue();
+
+        if (selectedTask == null || selectedType == null) {
+            showAlert("Error", "Please select both a Task and Reminder Type.");
+            return;
+        }
+
+        try {
+            Reminder newReminder = dataManager.createReminder(selectedTask, selectedType, selectedDate);
             table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
-        });
+            showAlert("Success", "Reminder added successfully!");
+        } catch (Exception ex) {
+            showAlert("Error", ex.getMessage());
+        }
+    });
 
-        VBox vbox = new VBox(10, table, btnDeleteReminder);
-        vbox.setPadding(new Insets(5));
-        pane.setCenter(vbox);
+    Button btnDelete = new Button("Delete Reminder");
+    btnDelete.setOnAction(e -> {
+        Reminder selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Warning", "Select a reminder first.");
+            return;
+        }
+        dataManager.deleteReminder(selected);
+        table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
+    });
 
-        return pane;
-    }
+    // 🔹 ΝΕΟ: Επεξεργασία Υπενθύμισης
+    Button btnEdit = new Button("Update Reminder");
+    btnEdit.setOnAction(e -> {
+        Reminder selected = table.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Warning", "Select a reminder first.");
+            return;
+        }
+
+        Task selectedTask = cmbTask.getValue();
+        ReminderType selectedType = cmbType.getValue();
+        LocalDate selectedDate = dpCustomDate.getValue();
+
+        if (selectedTask == null || selectedType == null) {
+            showAlert("Error", "Please select a task and reminder type.");
+            return;
+        }
+
+        try {
+            // ✅ Ενημερώνουμε την υπάρχουσα υπενθύμιση
+            selected.setTaskId(selectedTask.getId());
+            selected.setType(selectedType);
+            selected.setReminderDate(selectedDate);
+    
+            // ✅ Καλούμε τη `updateReminder()` για να ενημερώσει το αρχείο JSON
+            dataManager.updateReminder(selected, selectedTask, selectedType, selectedDate);
+            
+            // ✅ Ενημέρωση του TableView
+            table.refresh(); 
+    
+            showAlert("Success", "Reminder updated successfully!");
+        } catch (Exception ex) {
+            showAlert("Error", ex.getMessage());
+        }
+    });
+
+    // 🔹 Όταν επιλέγεται μια υπενθύμιση, γεμίζουν τα πεδία
+    table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        if (newVal != null) {
+            Task relatedTask = dataManager.getTaskById(newVal.getTaskId());
+            cmbTask.setValue(relatedTask);
+            cmbType.setValue(newVal.getType());
+            dpCustomDate.setValue(newVal.getReminderDate());
+            dpCustomDate.setDisable(newVal.getType() != ReminderType.SPECIFIC_DATE);
+        }
+    });
+
+    formBox.getChildren().addAll(
+        new Label("Task:"), cmbTask,
+        new Label("Reminder Type:"), cmbType,
+        new Label("Custom Date (if applicable):"), dpCustomDate,
+        new HBox(10, btnAdd, btnEdit, btnDelete) // ✅ Προσθέσαμε το κουμπί Update
+    );
+
+    pane.setCenter(table);
+    pane.setRight(formBox);
+
+    return pane;
+}
 
     // ---------------------------------------------------------------
     // TAB 5: SEARCH

@@ -6,6 +6,7 @@ com\taskmanagementsystem\Reminder.class
 com\taskmanagementsystem\MainApplication.class
 com\taskmanagementsystem\MainApplication$1.class
 com\taskmanagementsystem\DataManager$1.class
+com\taskmanagementsystem\ConverterUtils$3.class
 com\taskmanagementsystem\DataManager$2.class
 com\taskmanagementsystem\ReminderType.class
 com\taskmanagementsystem\Task.class

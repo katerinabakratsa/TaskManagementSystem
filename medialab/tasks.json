@@ -1,7 +1,41 @@
 [ {
-  "id" : "dc0c174b-f7ae-4562-bbba-96693172f9b9",
-  "title" : "οιοιξοιξξο",
-  "description" : "θηθηθηθηηθ",
+  "id" : "12eec568-52f9-4244-b18e-513701c5d4ae",
+  "title" : "αααα",
+  "description" : "αα",
   "categoryId" : null,
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline"
+  "deadline" : null,
+  "status" : "OPEN"
+}, {
+  "id" : "5e97db44-dfcd-4181-907c-e90e43e435a8",
+  "title" : "ααααβββββ",
+  "description" : "αα",
+  "categoryId" : null,
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 2, 19 ],
+  "status" : "OPEN"
+}, {
+  "id" : "a2b991d9-9a77-475d-9467-31588c22caf5",
+  "title" : "ffff",
+  "description" : "",
+  "categoryId" : null,
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 4, 17 ],
+  "status" : "COMPLETED"
+}, {
+  "id" : "8f011411-e7af-4368-a79a-580ccdf8adb1",
+  "title" : "xixixixixi",
+  "description" : "",
+  "categoryId" : null,
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 2, 18 ],
+  "status" : "COMPLETED"
+}, {
+  "id" : "dafea18c-739d-474a-9dae-93804186f7c5",
+  "title" : "ffff",
+  "description" : "",
+  "categoryId" : null,
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 4, 17 ],
+  "status" : "OPEN"
+} ]

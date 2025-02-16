@@ -3,7 +3,7 @@ package com.taskmanagementsystem;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -52,6 +52,7 @@ public class DataManager {
      */
     public void loadAllData() {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         File catFile = new File(CATEGORIES_FILE);
         File prioFile = new File(PRIORITIES_FILE);
         File taskFile = new File(TASKS_FILE);
@@ -85,6 +86,7 @@ public class DataManager {
      */
     public void saveAllData() {
         ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
 
         try {
@@ -286,9 +288,13 @@ public class DataManager {
      * @param newStatus    new status
      */
     public void updateTask(Task task, String newTitle, String newDesc,
-                           Category newCategory, Priority newPriority,
-                           LocalDate newDeadline, TaskStatus newStatus) {
+                       Category newCategory, Priority newPriority,
+                       LocalDate newDeadline, TaskStatus newStatus) {
 
+    // Αποθηκεύουμε την προηγούμενη κατάσταση της εργασίας
+        TaskStatus previousStatus = task.getStatus();
+
+    // Ενημερώνουμε τα δεδομένα της εργασίας
         task.setTitle(newTitle);
         task.setDescription(newDesc);
         task.setCategoryId(newCategory != null ? newCategory.getId() : null);
@@ -296,10 +302,14 @@ public class DataManager {
         task.setDeadline(newDeadline);
         task.setStatus(newStatus);
 
-        // If status -> COMPLETED, remove all reminders for that task
-        if (newStatus == TaskStatus.COMPLETED) {
+    // ✅ Διαγράφουμε υπενθυμίσεις ΜΟΝΟ αν η εργασία άλλαξε από άλλη κατάσταση σε COMPLETED
+        if (previousStatus != TaskStatus.COMPLETED && newStatus == TaskStatus.COMPLETED) {
             reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
+            System.out.println("✅ All reminders for task '" + task.getTitle() + "' have been deleted.");
         }
+
+    // ✅ Αποθηκεύουμε τα δεδομένα ώστε να μην επανεμφανιστούν οι reminders
+        saveAllData();
     }
 
     /**
@@ -358,11 +368,16 @@ public class DataManager {
 
         // Check if the reminder date is before "today" in a meaningless way
         if (reminderDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Reminder date has already passed or invalid.");
+            throw new IllegalArgumentException("Reminder date is invalid.");
         }
 
+        if (reminderDate == null) {
+            throw new IllegalArgumentException("Reminder date cannot be null.");
+        }
+        
         Reminder reminder = new Reminder(task.getId(), type, reminderDate);
         reminders.add(reminder);
+        saveAllData(); // ✅ Αποθηκεύουμε πάντα τις αλλαγές
         return reminder;
     }
 
@@ -372,6 +387,30 @@ public class DataManager {
     public void deleteReminder(Reminder reminder) {
         reminders.remove(reminder);
     }
+
+    /**
+ * Updates an existing reminder.
+ */
+public void updateReminder(Reminder reminder, Task newTask, ReminderType newType, LocalDate newDate) {
+    if (reminder == null) return;
+
+    // ✅ Ενημέρωση δεδομένων της υπενθύμισης
+    reminder.setTaskId(newTask.getId());
+    reminder.setType(newType);
+    reminder.setReminderDate(newDate);
+
+    // ✅ Βρίσκουμε την υπενθύμιση στη λίστα και την αντικαθιστούμε
+    for (int i = 0; i < reminders.size(); i++) {
+        if (reminders.get(i).getId().equals(reminder.getId())) {
+            reminders.set(i, reminder);
+            break;
+        }
+    }
+
+    // ✅ Αποθήκευση όλων των δεδομένων στο JSON
+    saveAllData();
+}
+
 
     /**
      * Searches for reminders related to a specific Task.
@@ -436,4 +475,14 @@ public class DataManager {
         if (priorityId == null) return null;
         return priorities.stream().filter(p -> p.getId().equals(priorityId)).findFirst().orElse(null);
     }
+
+    public Task getTaskById(String taskId) {
+        return tasks.stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findFirst()
+                .orElse(null);
+    }
+    
 }
+
+
