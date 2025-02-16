@@ -341,6 +341,12 @@ public class DataManager {
         if (task.getStatus() == TaskStatus.COMPLETED) {
             throw new IllegalStateException("Cannot create reminder for a Completed task.");
         }
+
+        if (type == ReminderType.SPECIFIC_DATE && customDate == null) {
+            throw new IllegalArgumentException("Reminder date cannot be empty for SPECIFIC_DATE.");
+        }
+
+
         // Calculate the reminderDate if type != SPECIFIC_DATE
         LocalDate reminderDate;
         LocalDate deadline = task.getDeadline();
@@ -367,12 +373,8 @@ public class DataManager {
         }
 
         // Check if the reminder date is before "today" in a meaningless way
-        if (reminderDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Reminder date is invalid.");
-        }
-
-        if (reminderDate == null) {
-            throw new IllegalArgumentException("Reminder date cannot be null.");
+        if (reminderDate != null && reminderDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Reminder date cannot be in the past.");
         }
         
         Reminder reminder = new Reminder(task.getId(), type, reminderDate);
@@ -393,6 +395,41 @@ public class DataManager {
  */
 public void updateReminder(Reminder reminder, Task newTask, ReminderType newType, LocalDate newDate) {
     if (reminder == null) return;
+
+    if (newType == ReminderType.SPECIFIC_DATE && newDate == null) {
+        throw new IllegalArgumentException("Reminder date cannot be empty for SPECIFIC_DATE.");
+    }
+
+    // Ελέγχουμε αν η εργασία έχει deadline
+    LocalDate deadline = newTask.getDeadline();
+    if (deadline == null) {
+        throw new IllegalArgumentException("Task has no deadline, cannot set this type of reminder.");
+    }
+
+    // ✅ Υπολογίζουμε σωστά την ημερομηνία υπενθύμισης
+    LocalDate reminderDate = null;
+    switch (newType) {
+        case ONE_DAY_BEFORE:
+            reminderDate = deadline.minusDays(1);
+            break;
+        case ONE_WEEK_BEFORE:
+            reminderDate = deadline.minusWeeks(1);
+            break;
+        case ONE_MONTH_BEFORE:
+            reminderDate = deadline.minusMonths(1);
+            break;
+        case SPECIFIC_DATE:
+            reminderDate = newDate;
+            break;
+        default:
+            reminderDate = deadline;
+    }
+
+
+    // ✅ Έλεγχος για ημερομηνία στο παρελθόν
+    if (newDate != null && newDate.isBefore(LocalDate.now())) {
+        throw new IllegalArgumentException("Reminder date cannot be in the past.");
+    }
 
     // ✅ Ενημέρωση δεδομένων της υπενθύμισης
     reminder.setTaskId(newTask.getId());

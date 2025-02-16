@@ -1,41 +1,57 @@
 [ {
-  "id" : "12eec568-52f9-4244-b18e-513701c5d4ae",
-  "title" : "αααα",
-  "description" : "αα",
+  "id" : "407e63fd-20ae-4e33-9334-18486a3f58d8",
+  "title" : "aaa",
+  "description" : "",
   "categoryId" : null,
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
   "deadline" : null,
   "status" : "OPEN"
 }, {
-  "id" : "5e97db44-dfcd-4181-907c-e90e43e435a8",
-  "title" : "ααααβββββ",
-  "description" : "αα",
+  "id" : "b72a6367-e06b-4ab5-9034-7725fb0ee022",
+  "title" : "b",
+  "description" : "",
   "categoryId" : null,
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
   "deadline" : [ 2025, 2, 19 ],
   "status" : "OPEN"
 }, {
-  "id" : "a2b991d9-9a77-475d-9467-31588c22caf5",
-  "title" : "ffff",
+  "id" : "8fe36dd4-65b7-476a-a428-1f336ed00f48",
+  "title" : "bc",
   "description" : "",
   "categoryId" : null,
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 4, 17 ],
+  "deadline" : [ 2025, 6, 11 ],
+  "status" : "OPEN"
+}, {
+  "id" : "d45c53c5-8762-4593-94c8-5a4eb5125189",
+  "title" : "bcd",
+  "description" : "",
+  "categoryId" : null,
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 6, 11 ],
   "status" : "COMPLETED"
 }, {
-  "id" : "8f011411-e7af-4368-a79a-580ccdf8adb1",
-  "title" : "xixixixixi",
+  "id" : "49e8019a-def4-4e97-8525-0971c7f1215d",
+  "title" : "dd",
   "description" : "",
   "categoryId" : null,
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 2, 18 ],
-  "status" : "COMPLETED"
+  "deadline" : [ 2025, 7, 8 ],
+  "status" : "OPEN"
 }, {
-  "id" : "dafea18c-739d-474a-9dae-93804186f7c5",
-  "title" : "ffff",
-  "description" : "",
+  "id" : "435b740d-be46-4365-99c4-4dcd52527689",
+  "title" : "na bgalo το φαγητο",
+  "description" : "σλκφνλασδνφλξασδνφσλφκν",
   "categoryId" : null,
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 4, 17 ],
+  "deadline" : null,
+  "status" : "OPEN"
+}, {
+  "id" : "bc0fad83-3041-43c5-add3-ad0e484727c5",
+  "title" : "ξανσλδκφναλσδκφν",
+  "description" : "",
+  "categoryId" : "6564ee7e-edc2-4e41-962f-90f8208986da",
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 2, 21 ],
   "status" : "OPEN"
 } ]

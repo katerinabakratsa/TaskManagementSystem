@@ -453,12 +453,8 @@ public class MainApplication extends Application {
 
     // Αν επιλεγεί "SPECIFIC_DATE", ενεργοποιούμε το DatePicker
     cmbType.setOnAction(e -> {
-        if (cmbType.getValue() == ReminderType.SPECIFIC_DATE) {
-            dpCustomDate.setDisable(false);
-        } else {
-            dpCustomDate.setDisable(true);
-            dpCustomDate.setValue(null); // Καθαρίζουμε την επιλογή
-        }
+        dpCustomDate.setDisable(cmbType.getValue() != ReminderType.SPECIFIC_DATE);
+        if (dpCustomDate.isDisabled()) dpCustomDate.setValue(null); // Καθαρίζουμε την επιλογή
     });
 
     Button btnAdd = new Button("Add Reminder");
@@ -469,6 +465,11 @@ public class MainApplication extends Application {
 
         if (selectedTask == null || selectedType == null) {
             showAlert("Error", "Please select both a Task and Reminder Type.");
+            return;
+        }
+
+        if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
+            showAlert("Error", "Reminder date cannot be empty.");
             return;
         }
 
@@ -510,17 +511,39 @@ public class MainApplication extends Application {
             return;
         }
 
+        if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
+            showAlert("Error", "Reminder date cannot be empty.");
+            return;
+        }
+
         try {
-            // ✅ Ενημερώνουμε την υπάρχουσα υπενθύμιση
-            selected.setTaskId(selectedTask.getId());
-            selected.setType(selectedType);
-            selected.setReminderDate(selectedDate);
+            // ✅ Υπολογισμός νέας ημερομηνίας υπενθύμισης
+            LocalDate newReminderDate = null;
+            switch (selectedType) {
+                case ONE_DAY_BEFORE:
+                    newReminderDate = selectedTask.getDeadline().minusDays(1);
+                    break;
+                case ONE_WEEK_BEFORE:
+                    newReminderDate = selectedTask.getDeadline().minusWeeks(1);
+                    break;
+                case ONE_MONTH_BEFORE:
+                    newReminderDate = selectedTask.getDeadline().minusMonths(1);
+                    break;
+                case SPECIFIC_DATE:
+                    newReminderDate = selectedDate;
+                    break;
+            }
     
-            // ✅ Καλούμε τη `updateReminder()` για να ενημερώσει το αρχείο JSON
-            dataManager.updateReminder(selected, selectedTask, selectedType, selectedDate);
-            
-            // ✅ Ενημέρωση του TableView
-            table.refresh(); 
+            if (newReminderDate.isBefore(LocalDate.now())) {
+                showAlert("Error", "Reminder date cannot be in the past.");
+                return;
+            }
+    
+            // ✅ Καλούμε `updateReminder()`
+            dataManager.updateReminder(selected, selectedTask, selectedType, newReminderDate);
+    
+            // ✅ Ενημέρωση TableView
+            table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
     
             showAlert("Success", "Reminder updated successfully!");
         } catch (Exception ex) {
