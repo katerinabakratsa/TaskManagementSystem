@@ -1,40 +1,81 @@
+/* ---------- General UI Theme ---------- */
 .root {
-    -fx-font-family: "Segoe UI", sans-serif;
-    -fx-background-color: #f6f9fc; /* ανοιχτό, παστέλ background */
+    -fx-background-color: linear-gradient(to bottom, #ffe6f2, #f5e6ff);
+    -fx-font-family: "Poppins", "Arial", sans-serif;
 }
 
-.label {
-    -fx-font-size: 14px;
-}
-
+/* ---------- Tabs ---------- */
 .tab-pane {
-    -fx-background-color: #ffffff;
+    -fx-background-color: transparent;
 }
 
-.tab-header-background {
-    -fx-background-color: #d0ebff; /* απαλό μπλε */
+.tab {
+    -fx-background-color: #d291bc;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px;
+    -fx-border-radius: 10px 10px 0 0;
 }
 
-.button {
-    -fx-background-color: #aedff7; /* παστέλ γαλάζιο */
-    -fx-text-fill: #003366;
+.tab:selected {
+    -fx-background-color: #a26ea1;
+}
+
+/* ---------- Labels & Titles ---------- */
+.label {
+    -fx-font-size: 15px;
+    -fx-text-fill: #5e3b66;
     -fx-font-weight: bold;
 }
 
+/* ---------- Buttons (Elegant Hover) ---------- */
+.button {
+    -fx-background-color: linear-gradient(to right, #d88ba0, #b685c8);
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+    -fx-padding: 10px 15px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 4, 0, 0, 2);
+}
+
+.button:hover {
+    -fx-background-color: linear-gradient(to right, #e6a8b7, #c29bd9);
+}
+
+/* ---------- Tables with Glass Effect ---------- */
 .table-view {
-    -fx-background-color: #ffffff;
-    -fx-selection-bar: #cfe2f3;   /* παστέλ μπλε σε επιλεγμένες γραμμές */
-    -fx-selection-bar-text: #000000;
+    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-border-color: #d88ba0;
+    -fx-border-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 3, 0, 0, 2);
 }
 
-.text-field, .date-picker, .combo-box {
-    -fx-background-color: #ffffff, linear-gradient(to bottom, derive(#ffffff,5%), derive(#ffffff,-10%)), linear-gradient(to bottom, derive(#ffffff,5%), derive(#ffffff,-10%));
-    -fx-background-insets: 0,1,2;
-    -fx-background-radius: 3,2,1;
+.table-column {
+    -fx-alignment: CENTER;
+    -fx-font-weight: bold;
+    -fx-text-fill: #5e3b66;
 }
 
-.list-view {
-    -fx-background-color: #ffffff;
-    -fx-selection-bar: #cfe2f3;
-    -fx-selection-bar-text: #000000;
+.table-row-cell {
+    -fx-background-color: #f8e1e7;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #e6a8b7;
+    -fx-font-weight: bold;
+}
+
+/* ---------- TextFields ---------- */
+.text-field {
+    -fx-background-color: white;
+    -fx-border-color: #d88ba0;
+    -fx-border-radius: 10px;
+    -fx-padding: 6px;
+}
+
+.text-field:focused {
+    -fx-border-color: #a26ea1;
 }

@@ -9,10 +9,13 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import com.taskmanagementsystem.ui.AnimatedBackground;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import com.AnimatedBackground;
 
 /**
  * Main JavaFX Application that sets up the UI with TabPane for Tasks, Categories, Priorities, Reminders, Search.
@@ -32,24 +35,34 @@ public class MainApplication extends Application {
         // 1. Load data from JSON
         dataManager.loadAllData();
 
-        // 2. Count how many delayed tasks
+    // 2. Ενημέρωση εκπρόθεσμων εργασιών
+        for (Task task : dataManager.getAllTasks()) {
+            task.checkIfShouldBeDelayed(); // Μετατρέπει αυτόματα σε DELAYED αν η προθεσμία έχει περάσει
+        }
+    
+    // 3. Αποθήκευση αλλαγών πίσω στο JSON
+        dataManager.saveAllData();
+
+    // 4. Εμφάνιση μηνύματος αν υπάρχουν εκπρόθεσμες εργασίες
         long delayedCount = dataManager.getAllTasks().stream()
                 .filter(t -> t.getStatus() == TaskStatus.DELAYED)
                 .count();
         if (delayedCount > 0) {
             showAlert("Delayed Tasks", "There are " + delayedCount + " delayed tasks!");
-        }
+       }
 
-        // 3. Create the main layout
-        BorderPane root = new BorderPane();
+    // 5. Δημιουργία του κύριου UI
+       BorderPane root = new BorderPane();
 
-        // TOP: summary info
-        HBox topBox = createTopBox();
-        root.setTop(topBox);
 
-        // CENTER: TabPane with the main features
+    
+    // TOP: summary info
+       HBox topBox = createTopBox();
+       root.setTop(topBox);
+
+    // CENTER: TabPane με όλες τις καρτέλες
         TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE); // we don't want closable tabs
+      tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE); // no close buttons
 
         Tab tasksTab = new Tab("Tasks", createTasksPane());
         Tab categoriesTab = new Tab("Categories", createCategoriesPane());
@@ -58,21 +71,17 @@ public class MainApplication extends Application {
         Tab searchTab = new Tab("Search", createSearchPane());
 
         tabPane.getTabs().addAll(tasksTab, categoriesTab, prioritiesTab, remindersTab, searchTab);
+       root.setCenter(tabPane);
 
-        root.setCenter(tabPane);
-
-        // BOTTOM: optional status bar (omitted or you can add it if you like)
-        // root.setBottom(...);
-
-        // 4. Scene
+    // 6. Δημιουργία Scene και εμφάνιση παραθύρου
         Scene scene = new Scene(root, 1000, 700);
-        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());  // load pastel CSS
+        scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         primaryStage.setTitle("MediaLab Assistant");
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // 5. Initial summary update
-        updateSummaryInfo();
+    // 7. Αρχική ενημέρωση των counters
+      updateSummaryInfo();
     }
 
     @Override

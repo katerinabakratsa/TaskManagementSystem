@@ -1,7 +1,9 @@
-C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\CategoryManager.java
-C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\JsonHandler.java
-C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\Main.java
-C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\PriorityManager.java
-C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\ReminderManager.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\Category.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\ConverterUtils.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\DataManager.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\MainApplication.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\Priority.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\Reminder.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\ReminderType.java
 C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\Task.java
-C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\TaskManager.java
+C:\Users\USER\Desktop\TaskManagementSystem\task-management-system\src\main\java\com\taskmanagementsystem\TaskStatus.java
