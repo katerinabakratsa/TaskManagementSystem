@@ -14,28 +14,4 @@
   "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
   "deadline" : null,
   "status" : "OPEN"
-}, {
-  "id" : "d5f9b007-9c4d-4c5c-be41-7a0d5332fdd7",
-  "title" : "φα",
-  "description" : "",
-  "categoryId" : "6564ee7e-edc2-4e41-962f-90f8208986da",
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 2, 18 ],
-  "status" : "OPEN"
-}, {
-  "id" : "b9f4acb7-e397-49f4-8eec-872c35da1dfa",
-  "title" : "33",
-  "description" : "φα2",
-  "categoryId" : "6564ee7e-edc2-4e41-962f-90f8208986da",
-  "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
-  "deadline" : null,
-  "status" : "OPEN"
-}, {
-  "id" : "8090b83c-7c41-4002-be6c-2fb351d1f430",
-  "title" : "αριθ",
-  "description" : "3",
-  "categoryId" : "44b30784-bda8-4008-bb9f-de9eda37db0f",
-  "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
-  "deadline" : null,
-  "status" : "OPEN"
 } ]

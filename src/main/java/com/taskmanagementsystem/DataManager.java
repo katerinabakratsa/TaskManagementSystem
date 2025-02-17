@@ -14,7 +14,7 @@ import java.util.*;
 
 /**
  * Central class that manages all categories, priorities, tasks, and reminders.
- *
+ * <p>
  * Provides methods to load/save JSON files, create/update/delete objects,
  * and handle rules like:
  *  - Deleting tasks when a category is removed
@@ -34,14 +34,14 @@ public class DataManager {
     private final ObservableList<Task> tasks = FXCollections.observableArrayList();
     private final ObservableList<Reminder> reminders = FXCollections.observableArrayList();
 
-    // We'll store the ID of the "Default" priority for easy reference
+    // Θα αποθηκεύουμε το ID της "Default" priority για εύκολη αναφορά
     private String defaultPriorityId;
 
     /**
      * Constructor
      */
     public DataManager() {
-        // Αρχικοποίηση των λιστών γίνεται στο loadAllData
+        // Οι λίστες φορτώνονται από το loadAllData()
     }
 
     // ---------------------------------------------------------------
@@ -62,7 +62,6 @@ public class DataManager {
         File remFile = new File(REMINDERS_FILE);
 
         try {
-            // Φορτώνουμε προσωρινά σε απλές λίστες
             List<Category> loadedCategories = new ArrayList<>();
             List<Priority> loadedPriorities = new ArrayList<>();
             List<Task> loadedTasks = new ArrayList<>();
@@ -81,7 +80,6 @@ public class DataManager {
                 loadedReminders = mapper.readValue(remFile, new TypeReference<>() {});
             }
 
-            // Μεταφέρουμε τα δεδομένα στις ObservableLists
             categories.setAll(loadedCategories);
             priorities.setAll(loadedPriorities);
             tasks.setAll(loadedTasks);
@@ -91,7 +89,7 @@ public class DataManager {
             e.printStackTrace();
         }
 
-        // Αν δεν υπάρχει Default priority, δημιουργείται
+        // Αν δεν υπάρχει Default priority, τη φτιάχνουμε
         ensureDefaultPriorityExists();
         // Ενημέρωση τυχόν delayed tasks
         updateDelayedTasks();
@@ -122,13 +120,12 @@ public class DataManager {
     }
 
     /**
-     * Ensures that a "Default" priority exists. If not found, creates it.
+     * Αν δεν υπάρχει "Default" προτεραιότητα, τη φτιάχνουμε.
      */
     private void ensureDefaultPriorityExists() {
         Optional<Priority> defaultP = priorities.stream()
                 .filter(p -> p.getName().equalsIgnoreCase("Default"))
                 .findFirst();
-
         if (defaultP.isEmpty()) {
             Priority def = new Priority("Default");
             priorities.add(def);
@@ -139,7 +136,7 @@ public class DataManager {
     }
 
     /**
-     * At initialization, update tasks that should be "Delayed" if their deadline is past.
+     * Ελέγχουμε ποιες εργασίες πρέπει να γίνουν "DELAYED".
      */
     private void updateDelayedTasks() {
         for (Task t : tasks) {
@@ -169,16 +166,16 @@ public class DataManager {
     }
 
     public void deleteCategory(Category category) {
-        // Διαγράφουμε όλες τις tasks που ανήκουν σε αυτήν
+        // Βρίσκουμε τις εργασίες που ανήκουν σε αυτήν
         List<String> taskIdsToRemove = new ArrayList<>();
         for (Task t : tasks) {
             if (t.getCategoryId() != null && t.getCategoryId().equals(category.getId())) {
                 taskIdsToRemove.add(t.getId());
             }
         }
-        // Αφαιρούμε υπενθυμίσεις για όσες tasks διαγράφηκαν
+        // Αφαιρούμε υπενθυμίσεις για αυτές τις εργασίες
         reminders.removeIf(r -> taskIdsToRemove.contains(r.getTaskId()));
-        // Αφαιρούμε τις tasks
+        // Αφαιρούμε τις εργασίες
         tasks.removeIf(t -> taskIdsToRemove.contains(t.getId()));
 
         // Τέλος αφαιρούμε την κατηγορία
@@ -218,7 +215,7 @@ public class DataManager {
             return;
         }
 
-        // Όσες tasks είχαν αυτό το priority, παίρνουν το Default
+        // Όσες tasks είχαν αυτή την Priority, αποκτούν τη Default
         for (Task t : tasks) {
             if (t.getPriorityId().equals(priority.getId())) {
                 t.setPriorityId(def.getId());
@@ -269,7 +266,6 @@ public class DataManager {
         task.setDeadline(newDeadline);
         task.setStatus(newStatus);
 
-        // Αν από άλλη κατάσταση πέρασε σε COMPLETED, διαγράφουμε τις υπενθυμίσεις
         if (previousStatus != TaskStatus.COMPLETED && newStatus == TaskStatus.COMPLETED) {
             reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
             System.out.println("✅ All reminders for task '" + task.getTitle() + "' have been deleted.");
@@ -277,7 +273,6 @@ public class DataManager {
     }
 
     public void deleteTask(Task task) {
-        // Αφαιρούμε όλες τις reminders που ανήκουν σε αυτήν
         reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
         tasks.remove(task);
     }
@@ -350,7 +345,6 @@ public class DataManager {
             throw new IllegalArgumentException("Task has no deadline, cannot set this type of reminder.");
         }
 
-        // Υπολογίζουμε το σωστό reminderDate
         LocalDate reminderDate;
         switch (newType) {
             case ONE_DAY_BEFORE:
@@ -375,7 +369,6 @@ public class DataManager {
         reminder.setType(newType);
         reminder.setReminderDate(reminderDate);
 
-        // Ενημερώνουμε τη λίστα με το τροποποιημένο αντικείμενο
         for (int i = 0; i < reminders.size(); i++) {
             if (reminders.get(i).getId().equals(reminder.getId())) {
                 reminders.set(i, reminder);
@@ -394,7 +387,8 @@ public class DataManager {
             boolean matchPriority = true;
 
             if (title != null && !title.isEmpty()) {
-                matchTitle = task.getTitle() != null && task.getTitle().toLowerCase().contains(title.toLowerCase());
+                matchTitle = task.getTitle() != null
+                        && task.getTitle().toLowerCase().contains(title.toLowerCase());
             }
             if (category != null) {
                 matchCategory = category.getId().equals(task.getCategoryId());
@@ -411,12 +405,18 @@ public class DataManager {
     // ---------------------------------------------------------------
     public Category findCategoryById(String categoryId) {
         if (categoryId == null) return null;
-        return categories.stream().filter(c -> c.getId().equals(categoryId)).findFirst().orElse(null);
+        return categories.stream()
+                .filter(c -> c.getId().equals(categoryId))
+                .findFirst()
+                .orElse(null);
     }
 
     public Priority findPriorityById(String priorityId) {
         if (priorityId == null) return null;
-        return priorities.stream().filter(p -> p.getId().equals(priorityId)).findFirst().orElse(null);
+        return priorities.stream()
+                .filter(p -> p.getId().equals(priorityId))
+                .findFirst()
+                .orElse(null);
     }
 
     public Task getTaskById(String taskId) {
