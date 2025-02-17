@@ -3,7 +3,6 @@ package com.taskmanagementsystem;
 import javafx.application.Application;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,15 +10,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import com.taskmanagementsystem.ConverterUtils;
 
-
-/**
- * Main JavaFX Application that sets up the UI with TabPane for Tasks, Categories, Priorities, Reminders, Search.
- */
 public class MainApplication extends Application {
 
     private DataManager dataManager = new DataManager();
@@ -35,34 +29,32 @@ public class MainApplication extends Application {
         // 1. Load data from JSON
         dataManager.loadAllData();
 
-    // 2. Ενημέρωση εκπρόθεσμων εργασιών
+        // 2. Ενημέρωση εκπρόθεσμων εργασιών
         for (Task task : dataManager.getAllTasks()) {
             task.checkIfShouldBeDelayed(); // Μετατρέπει αυτόματα σε DELAYED αν η προθεσμία έχει περάσει
         }
-    
-    // 3. Αποθήκευση αλλαγών πίσω στο JSON
+
+        // 3. Αποθήκευση αλλαγών πίσω στο JSON
         dataManager.saveAllData();
 
-    // 4. Εμφάνιση μηνύματος αν υπάρχουν εκπρόθεσμες εργασίες
+        // 4. Εμφάνιση μηνύματος αν υπάρχουν εκπρόθεσμες εργασίες
         long delayedCount = dataManager.getAllTasks().stream()
                 .filter(t -> t.getStatus() == TaskStatus.DELAYED)
                 .count();
         if (delayedCount > 0) {
             showAlert("Delayed Tasks", "There are " + delayedCount + " delayed tasks!");
-       }
+        }
 
-    // 5. Δημιουργία του κύριου UI
-       BorderPane root = new BorderPane();
+        // 5. Δημιουργία του κύριου UI
+        BorderPane root = new BorderPane();
 
+        // TOP: summary info
+        VBox topBox = createTopBox();
+        root.setTop(topBox);
 
-    
-    // TOP: summary info
-       VBox topBox = createTopBox();
-       root.setTop(topBox);
-
-    // CENTER: TabPane με όλες τις καρτέλες
+        // CENTER: TabPane με όλες τις καρτέλες
         TabPane tabPane = new TabPane();
-      tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE); // no close buttons
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE); // no close buttons
 
         Tab tasksTab = new Tab("Tasks", createTasksPane());
         Tab categoriesTab = new Tab("Categories", createCategoriesPane());
@@ -71,17 +63,17 @@ public class MainApplication extends Application {
         Tab searchTab = new Tab("Search", createSearchPane());
 
         tabPane.getTabs().addAll(tasksTab, categoriesTab, prioritiesTab, remindersTab, searchTab);
-       root.setCenter(tabPane);
+        root.setCenter(tabPane);
 
-    // 6. Δημιουργία Scene και εμφάνιση παραθύρου
+        // 6. Δημιουργία Scene και εμφάνιση παραθύρου
         Scene scene = new Scene(root, 1000, 700);
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         primaryStage.setTitle("MediaLab Assistant");
         primaryStage.setScene(scene);
         primaryStage.show();
 
-    // 7. Αρχική ενημέρωση των counters
-      updateSummaryInfo();
+        // 7. Αρχική ενημέρωση των counters
+        updateSummaryInfo();
     }
 
     @Override
@@ -94,35 +86,31 @@ public class MainApplication extends Application {
     // TOP BOX
     // ---------------------------------------------------------------
     private VBox createTopBox() {
-       
+
         Label lblTitle = new Label("MediaLab Assistant");
         lblTitle.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;"); // ✅ Μωβ χρώμα & bold
-      
+
         lblTotalTasks = new Label("Total tasks: 0");
         lblCompletedTasks = new Label("Completed tasks: 0");
         lblDelayedTasks = new Label("Delayed tasks: 0");
         lblDeadline7Days = new Label("Due <= 7 days: 0");
 
-        // ✅ Μείωση μεγέθους για να ταιριάζει καλύτερα οπτικά
         String counterStyle = "-fx-font-size: 14px; -fx-font-weight: bold;";
         lblTotalTasks.setStyle(counterStyle);
         lblCompletedTasks.setStyle(counterStyle);
         lblDelayedTasks.setStyle(counterStyle);
         lblDeadline7Days.setStyle(counterStyle);
 
-        // ✅ Ομαδοποίηση των counters σε ένα οριζόντιο HBox
-    HBox countersBox = new HBox(20, lblTotalTasks, lblCompletedTasks, lblDelayedTasks, lblDeadline7Days);
-    countersBox.setAlignment(Pos.CENTER);
+        HBox countersBox = new HBox(20, lblTotalTasks, lblCompletedTasks, lblDelayedTasks, lblDeadline7Days);
+        countersBox.setAlignment(Pos.CENTER);
 
-    // ✅ Δημιουργία του VBox που περιέχει τον τίτλο και τα counters
-    VBox topBox = new VBox();
-    topBox.setSpacing(5); // Μικρή απόσταση μεταξύ τίτλου και counters
-    topBox.setPadding(new Insets(10));
-    topBox.setAlignment(Pos.CENTER); // ✅ Κεντράρουμε το περιεχόμενο
-    topBox.getChildren().addAll(lblTitle, countersBox);
+        VBox topBox = new VBox();
+        topBox.setSpacing(5);
+        topBox.setPadding(new Insets(10));
+        topBox.setAlignment(Pos.CENTER);
+        topBox.getChildren().addAll(lblTitle, countersBox);
 
-    return topBox;
-
+        return topBox;
     }
 
     private void updateSummaryInfo() {
@@ -165,7 +153,8 @@ public class MainApplication extends Application {
 
         table.getColumns().addAll(colTitle, colDesc, colStatus);
 
-        table.setItems(FXCollections.observableArrayList(dataManager.getAllTasks()));
+        // Χρησιμοποιούμε την "ζωντανή" λίστα από το DataManager
+        table.setItems(dataManager.getObservableTasks());
 
         // FORM (right side) for add/edit
         VBox formBox = new VBox(10);
@@ -176,11 +165,11 @@ public class MainApplication extends Application {
         TextField txtDesc = new TextField();
         txtDesc.setPromptText("Description");
 
-        ComboBox<Category> cmbCategory = new ComboBox<>(FXCollections.observableArrayList(dataManager.getAllCategories()));
+        ComboBox<Category> cmbCategory = new ComboBox<>(dataManager.getObservableCategories());
         cmbCategory.setPromptText("Select Category");
         cmbCategory.setConverter(ConverterUtils.getCategoryConverter());
 
-        ComboBox<Priority> cmbPriority = new ComboBox<>(FXCollections.observableArrayList(dataManager.getAllPriorities()));
+        ComboBox<Priority> cmbPriority = new ComboBox<>(dataManager.getObservablePriorities());
         cmbPriority.setPromptText("Select Priority");
         cmbPriority.setConverter(ConverterUtils.getPriorityConverter());
 
@@ -202,9 +191,18 @@ public class MainApplication extends Application {
                 if (cmbStatus.getValue() != null) {
                     t.setStatus(cmbStatus.getValue());
                 }
-                table.setItems(FXCollections.observableArrayList(dataManager.getAllTasks()));
+
                 showAlert("Success", "Task created successfully!");
                 updateSummaryInfo();
+
+                // Καθαρισμός πεδίων
+                txtTitle.clear();
+                txtDesc.clear();
+                cmbCategory.setValue(null);
+                cmbPriority.setValue(null);
+                dpDeadline.setValue(null);
+                cmbStatus.setValue(null);
+
             } catch (Exception ex) {
                 showAlert("Error", "Could not create task: " + ex.getMessage());
             }
@@ -231,7 +229,7 @@ public class MainApplication extends Application {
                     dl,
                     st
             );
-            table.setItems(FXCollections.observableArrayList(dataManager.getAllTasks()));
+            table.refresh();
             showAlert("Success", "Task updated!");
             updateSummaryInfo();
         });
@@ -244,7 +242,6 @@ public class MainApplication extends Application {
                 return;
             }
             dataManager.deleteTask(selected);
-            table.setItems(FXCollections.observableArrayList(dataManager.getAllTasks()));
             showAlert("Success", "Task deleted.");
             updateSummaryInfo();
         });
@@ -264,7 +261,7 @@ public class MainApplication extends Application {
         });
 
         formBox.getChildren().addAll(new Label("Manage Task"), txtTitle, txtDesc, cmbCategory, cmbPriority, dpDeadline, cmbStatus,
-                                     new HBox(10, btnAdd, btnUpdate, btnDelete));
+                new HBox(10, btnAdd, btnUpdate, btnDelete));
 
         pane.setCenter(table);
         pane.setRight(formBox);
@@ -279,9 +276,8 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
-        ListView<Category> listView = new ListView<>();
-        ObservableList<Category> catObs = FXCollections.observableArrayList(dataManager.getAllCategories());
-        listView.setItems(catObs);
+        // Χρήση της ObservableList από DataManager
+        ListView<Category> listView = new ListView<>(dataManager.getObservableCategories());
         listView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Category item, boolean empty) {
@@ -302,7 +298,6 @@ public class MainApplication extends Application {
         btnAdd.setOnAction(e -> {
             if (txtCategoryName.getText().isEmpty()) return;
             dataManager.createCategory(txtCategoryName.getText());
-            catObs.setAll(dataManager.getAllCategories());
             txtCategoryName.clear();
         });
 
@@ -315,7 +310,6 @@ public class MainApplication extends Application {
             }
             if (txtCategoryName.getText().isEmpty()) return;
             dataManager.renameCategory(selected, txtCategoryName.getText());
-            catObs.setAll(dataManager.getAllCategories());
             txtCategoryName.clear();
         });
 
@@ -327,7 +321,6 @@ public class MainApplication extends Application {
                 return;
             }
             dataManager.deleteCategory(selected);
-            catObs.setAll(dataManager.getAllCategories());
             showAlert("Success", "Category and related tasks removed!");
             updateSummaryInfo();
         });
@@ -348,9 +341,7 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
-        ListView<Priority> listView = new ListView<>();
-        ObservableList<Priority> prioObs = FXCollections.observableArrayList(dataManager.getAllPriorities());
-        listView.setItems(prioObs);
+        ListView<Priority> listView = new ListView<>(dataManager.getObservablePriorities());
         listView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Priority item, boolean empty) {
@@ -371,7 +362,6 @@ public class MainApplication extends Application {
         btnAdd.setOnAction(e -> {
             if (txtPrioName.getText().isEmpty()) return;
             dataManager.createPriority(txtPrioName.getText());
-            prioObs.setAll(dataManager.getAllPriorities());
             txtPrioName.clear();
         });
 
@@ -384,7 +374,6 @@ public class MainApplication extends Application {
             }
             if (txtPrioName.getText().isEmpty()) return;
             dataManager.renamePriority(selected, txtPrioName.getText());
-            prioObs.setAll(dataManager.getAllPriorities());
             txtPrioName.clear();
             updateSummaryInfo();
         });
@@ -397,12 +386,9 @@ public class MainApplication extends Application {
                 return;
             }
             dataManager.deletePriority(selected);
-            prioObs.setAll(dataManager.getAllPriorities());
             showAlert("Success", "Priority deleted or replaced with Default in tasks.");
             updateSummaryInfo();
         });
-
-
 
         // 🔹 Listener: Αν η επιλεγμένη προτεραιότητα είναι "Default", τα κουμπιά εξαφανίζονται!
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -428,173 +414,142 @@ public class MainApplication extends Application {
     // TAB 4: REMINDERS
     // ---------------------------------------------------------------
     private Pane createRemindersPane() {
-    BorderPane pane = new BorderPane();
-    pane.setPadding(new Insets(10));
+        BorderPane pane = new BorderPane();
+        pane.setPadding(new Insets(10));
 
-    // Πίνακας Υπενθυμίσεων
-    TableView<Reminder> table = new TableView<>();
-    table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-    table.getStyleClass().add("table-view"); // Προσθήκη ίδιου στυλ με τα Tasks
+        // Πίνακας Υπενθυμίσεων
+        TableView<Reminder> table = new TableView<>();
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.getStyleClass().add("table-view"); // Προσθήκη ίδιου στυλ με τα Tasks
 
-    TableColumn<Reminder, String> colTaskTitle = new TableColumn<>("Task Title");
-    colTaskTitle.setCellValueFactory(cell -> {
-        String taskId = cell.getValue().getTaskId();
-        Task task = dataManager.getAllTasks().stream()
-                .filter(t -> t.getId().equals(taskId))
-                .findFirst().orElse(null);
-        return new SimpleStringProperty(task != null ? task.getTitle() : "N/A");
-    });
+        TableColumn<Reminder, String> colTaskTitle = new TableColumn<>("Task Title");
+        colTaskTitle.setCellValueFactory(cell -> {
+            String taskId = cell.getValue().getTaskId();
+            Task task = dataManager.getTaskById(taskId);
+            return new SimpleStringProperty(task != null ? task.getTitle() : "N/A");
+        });
 
-    TableColumn<Reminder, ReminderType> colType = new TableColumn<>("Type");
-    colType.setCellValueFactory(new PropertyValueFactory<>("type"));
+        TableColumn<Reminder, ReminderType> colType = new TableColumn<>("Type");
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
 
-    TableColumn<Reminder, String> colDate = new TableColumn<>("Reminder Date");
-    colDate.setCellValueFactory(cell -> {
-        LocalDate date = cell.getValue().getReminderDate();
-        return new SimpleStringProperty(date != null ? date.toString() : "N/A");
-    });
+        TableColumn<Reminder, String> colDate = new TableColumn<>("Reminder Date");
+        colDate.setCellValueFactory(cell -> {
+            LocalDate date = cell.getValue().getReminderDate();
+            return new SimpleStringProperty(date != null ? date.toString() : "N/A");
+        });
 
-    table.getColumns().addAll(colTaskTitle, colType, colDate);
-    table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
+        table.getColumns().addAll(colTaskTitle, colType, colDate);
+        table.setItems(dataManager.getObservableReminders());
 
-    // Φόρμα Προσθήκης Υπενθύμισης
-    VBox formBox = new VBox(10);
-    formBox.setPadding(new Insets(5));
+        // Φόρμα Προσθήκης Υπενθύμισης
+        VBox formBox = new VBox(10);
+        formBox.setPadding(new Insets(5));
 
-    ComboBox<Task> cmbTask = new ComboBox<>(FXCollections.observableArrayList(dataManager.getAllTasks()));
-    cmbTask.setPromptText("Select Task");
-    cmbTask.setConverter(ConverterUtils.getTaskConverter());
+        ComboBox<Task> cmbTask = new ComboBox<>(dataManager.getObservableTasks());
+        cmbTask.setPromptText("Select Task");
+        cmbTask.setConverter(ConverterUtils.getTaskConverter());
 
-    ComboBox<ReminderType> cmbType = new ComboBox<>(FXCollections.observableArrayList(ReminderType.values()));
-    cmbType.setPromptText("Select Reminder Type");
+        ComboBox<ReminderType> cmbType = new ComboBox<>(FXCollections.observableArrayList(ReminderType.values()));
+        cmbType.setPromptText("Select Reminder Type");
 
-    DatePicker dpCustomDate = new DatePicker();
-    dpCustomDate.setPromptText("Select Date");
-    dpCustomDate.setDisable(true); // Αρχικά απενεργοποιημένο
+        DatePicker dpCustomDate = new DatePicker();
+        dpCustomDate.setPromptText("Select Date");
+        dpCustomDate.setDisable(true); // Αρχικά απενεργοποιημένο
 
-    // Αν επιλεγεί "SPECIFIC_DATE", ενεργοποιούμε το DatePicker
-    cmbType.setOnAction(e -> {
-        dpCustomDate.setDisable(cmbType.getValue() != ReminderType.SPECIFIC_DATE);
-        if (dpCustomDate.isDisabled()) dpCustomDate.setValue(null); // Καθαρίζουμε την επιλογή
-    });
+        // Αν επιλεγεί "SPECIFIC_DATE", ενεργοποιούμε το DatePicker
+        cmbType.setOnAction(e -> {
+            dpCustomDate.setDisable(cmbType.getValue() != ReminderType.SPECIFIC_DATE);
+            if (dpCustomDate.isDisabled()) dpCustomDate.setValue(null);
+        });
 
-    Button btnAdd = new Button("Add Reminder");
-    btnAdd.setOnAction(e -> {
-        Task selectedTask = cmbTask.getValue();
-        ReminderType selectedType = cmbType.getValue();
-        LocalDate selectedDate = dpCustomDate.getValue();
+        Button btnAdd = new Button("Add Reminder");
+        btnAdd.setOnAction(e -> {
+            Task selectedTask = cmbTask.getValue();
+            ReminderType selectedType = cmbType.getValue();
+            LocalDate selectedDate = dpCustomDate.getValue();
 
-        if (selectedTask == null || selectedType == null) {
-            showAlert("Error", "Please select both a Task and Reminder Type.");
-            return;
-        }
-
-        if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
-            showAlert("Error", "Reminder date cannot be empty.");
-            return;
-        }
-
-        try {
-            Reminder newReminder = dataManager.createReminder(selectedTask, selectedType, selectedDate);
-            table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
-            showAlert("Success", "Reminder added successfully!");
-        } catch (Exception ex) {
-            showAlert("Error", ex.getMessage());
-        }
-    });
-
-    Button btnDelete = new Button("Delete Reminder");
-    btnDelete.setOnAction(e -> {
-        Reminder selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Warning", "Select a reminder first.");
-            return;
-        }
-        dataManager.deleteReminder(selected);
-        table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
-    });
-
-    // 🔹 ΝΕΟ: Επεξεργασία Υπενθύμισης
-    Button btnEdit = new Button("Update Reminder");
-    btnEdit.setOnAction(e -> {
-        Reminder selected = table.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert("Warning", "Select a reminder first.");
-            return;
-        }
-
-        Task selectedTask = cmbTask.getValue();
-        ReminderType selectedType = cmbType.getValue();
-        LocalDate selectedDate = dpCustomDate.getValue();
-
-        if (selectedTask == null || selectedType == null) {
-            showAlert("Error", "Please select a task and reminder type.");
-            return;
-        }
-
-        if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
-            showAlert("Error", "Reminder date cannot be empty.");
-            return;
-        }
-
-        try {
-            // ✅ Υπολογισμός νέας ημερομηνίας υπενθύμισης
-            LocalDate newReminderDate = null;
-            switch (selectedType) {
-                case ONE_DAY_BEFORE:
-                    newReminderDate = selectedTask.getDeadline().minusDays(1);
-                    break;
-                case ONE_WEEK_BEFORE:
-                    newReminderDate = selectedTask.getDeadline().minusWeeks(1);
-                    break;
-                case ONE_MONTH_BEFORE:
-                    newReminderDate = selectedTask.getDeadline().minusMonths(1);
-                    break;
-                case SPECIFIC_DATE:
-                    newReminderDate = selectedDate;
-                    break;
-            }
-    
-            if (newReminderDate.isBefore(LocalDate.now())) {
-                showAlert("Error", "Reminder date cannot be in the past.");
+            if (selectedTask == null || selectedType == null) {
+                showAlert("Error", "Please select both a Task and Reminder Type.");
                 return;
             }
-    
-            // ✅ Καλούμε `updateReminder()`
-            dataManager.updateReminder(selected, selectedTask, selectedType, newReminderDate);
-    
-            // ✅ Ενημέρωση TableView
-            table.setItems(FXCollections.observableArrayList(dataManager.getAllReminders()));
-    
-            showAlert("Success", "Reminder updated successfully!");
-        } catch (Exception ex) {
-            showAlert("Error", ex.getMessage());
-        }
-    });
 
-    // 🔹 Όταν επιλέγεται μια υπενθύμιση, γεμίζουν τα πεδία
-    table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-        if (newVal != null) {
-            Task relatedTask = dataManager.getTaskById(newVal.getTaskId());
-            cmbTask.setValue(relatedTask);
-            cmbType.setValue(newVal.getType());
-            dpCustomDate.setValue(newVal.getReminderDate());
-            dpCustomDate.setDisable(newVal.getType() != ReminderType.SPECIFIC_DATE);
-        }
-    });
+            if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
+                showAlert("Error", "Reminder date cannot be empty.");
+                return;
+            }
 
-    formBox.getChildren().addAll(
-        new Label("Task:"), cmbTask,
-        new Label("Reminder Type:"), cmbType,
-        new Label("Custom Date (if applicable):"), dpCustomDate,
-        new HBox(10, btnAdd, btnEdit, btnDelete) // ✅ Προσθέσαμε το κουμπί Update
-    );
+            try {
+                dataManager.createReminder(selectedTask, selectedType, selectedDate);
+                showAlert("Success", "Reminder added successfully!");
+            } catch (Exception ex) {
+                showAlert("Error", ex.getMessage());
+            }
+        });
 
-    pane.setCenter(table);
-    pane.setRight(formBox);
+        Button btnDelete = new Button("Delete Reminder");
+        btnDelete.setOnAction(e -> {
+            Reminder selected = table.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                showAlert("Warning", "Select a reminder first.");
+                return;
+            }
+            dataManager.deleteReminder(selected);
+        });
 
-    return pane;
-}
+        // 🔹 ΝΕΟ: Επεξεργασία Υπενθύμισης
+        Button btnEdit = new Button("Update Reminder");
+        btnEdit.setOnAction(e -> {
+            Reminder selected = table.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                showAlert("Warning", "Select a reminder first.");
+                return;
+            }
+
+            Task selectedTask = cmbTask.getValue();
+            ReminderType selectedType = cmbType.getValue();
+            LocalDate selectedDate = dpCustomDate.getValue();
+
+            if (selectedTask == null || selectedType == null) {
+                showAlert("Error", "Please select a task and reminder type.");
+                return;
+            }
+
+            if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
+                showAlert("Error", "Reminder date cannot be empty.");
+                return;
+            }
+
+            try {
+                dataManager.updateReminder(selected, selectedTask, selectedType, selectedDate);
+                showAlert("Success", "Reminder updated successfully!");
+            } catch (Exception ex) {
+                showAlert("Error", ex.getMessage());
+            }
+        });
+
+        // Όταν επιλέγεται μια υπενθύμιση, γεμίζουν τα πεδία
+        table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                Task relatedTask = dataManager.getTaskById(newVal.getTaskId());
+                cmbTask.setValue(relatedTask);
+                cmbType.setValue(newVal.getType());
+                dpCustomDate.setValue(newVal.getReminderDate());
+                dpCustomDate.setDisable(newVal.getType() != ReminderType.SPECIFIC_DATE);
+            }
+        });
+
+        formBox.getChildren().addAll(
+                new Label("Task:"), cmbTask,
+                new Label("Reminder Type:"), cmbType,
+                new Label("Custom Date (if applicable):"), dpCustomDate,
+                new HBox(10, btnAdd, btnEdit, btnDelete)
+        );
+
+        pane.setCenter(table);
+        pane.setRight(formBox);
+
+        return pane;
+    }
 
     // ---------------------------------------------------------------
     // TAB 5: SEARCH
@@ -606,11 +561,11 @@ public class MainApplication extends Application {
         TextField txtTitle = new TextField();
         txtTitle.setPromptText("Search by title (partial)");
 
-        ComboBox<Category> cmbCategory = new ComboBox<>(FXCollections.observableArrayList(dataManager.getAllCategories()));
+        ComboBox<Category> cmbCategory = new ComboBox<>(dataManager.getObservableCategories());
         cmbCategory.setPromptText("Category (optional)");
         cmbCategory.setConverter(ConverterUtils.getCategoryConverter());
 
-        ComboBox<Priority> cmbPriority = new ComboBox<>(FXCollections.observableArrayList(dataManager.getAllPriorities()));
+        ComboBox<Priority> cmbPriority = new ComboBox<>(dataManager.getObservablePriorities());
         cmbPriority.setPromptText("Priority (optional)");
         cmbPriority.setConverter(ConverterUtils.getPriorityConverter());
 
@@ -618,24 +573,25 @@ public class MainApplication extends Application {
 
         TableView<Task> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+
         TableColumn<Task, String> colTitle = new TableColumn<>("Title");
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
         TableColumn<Task, String> colPrio = new TableColumn<>("Priority");
         colPrio.setCellValueFactory(cell -> {
             String pid = cell.getValue().getPriorityId();
             Priority p = dataManager.findPriorityById(pid);
-            return new javafx.beans.property.SimpleStringProperty(p != null ? p.getName() : "??");
+            return new SimpleStringProperty(p != null ? p.getName() : "??");
         });
         TableColumn<Task, String> colCat = new TableColumn<>("Category");
         colCat.setCellValueFactory(cell -> {
             String cid = cell.getValue().getCategoryId();
             Category c = dataManager.findCategoryById(cid);
-            return new javafx.beans.property.SimpleStringProperty(c != null ? c.getName() : "??");
+            return new SimpleStringProperty(c != null ? c.getName() : "??");
         });
         TableColumn<Task, String> colDeadline = new TableColumn<>("Deadline");
         colDeadline.setCellValueFactory(cell -> {
             LocalDate d = cell.getValue().getDeadline();
-            return new javafx.beans.property.SimpleStringProperty(d != null ? d.toString() : "");
+            return new SimpleStringProperty(d != null ? d.toString() : "");
         });
 
         table.getColumns().addAll(colTitle, colPrio, colCat, colDeadline);

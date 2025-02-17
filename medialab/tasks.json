@@ -54,4 +54,20 @@
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
   "deadline" : [ 2025, 2, 21 ],
   "status" : "OPEN"
+}, {
+  "id" : "c81fb3bd-8d27-4ea1-b7dd-0bbd7d0fff7f",
+  "title" : "12312321312313",
+  "description" : "",
+  "categoryId" : "6564ee7e-edc2-4e41-962f-90f8208986da",
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 5, 16 ],
+  "status" : "IN_PROGRESS"
+}, {
+  "id" : "02a7e689-3d26-4c78-a0ec-2b08bd778178",
+  "title" : "δωασδωα",
+  "description" : "",
+  "categoryId" : null,
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 6, 27 ],
+  "status" : "OPEN"
 } ]
