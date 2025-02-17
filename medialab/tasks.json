@@ -7,67 +7,35 @@
   "deadline" : null,
   "status" : "OPEN"
 }, {
-  "id" : "b72a6367-e06b-4ab5-9034-7725fb0ee022",
-  "title" : "b",
-  "description" : "",
-  "categoryId" : null,
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 2, 19 ],
-  "status" : "OPEN"
-}, {
-  "id" : "8fe36dd4-65b7-476a-a428-1f336ed00f48",
-  "title" : "bc",
-  "description" : "",
-  "categoryId" : null,
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 6, 11 ],
-  "status" : "OPEN"
-}, {
   "id" : "d45c53c5-8762-4593-94c8-5a4eb5125189",
-  "title" : "bcd",
+  "title" : "33",
   "description" : "",
   "categoryId" : null,
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 6, 11 ],
-  "status" : "COMPLETED"
-}, {
-  "id" : "49e8019a-def4-4e97-8525-0971c7f1215d",
-  "title" : "dd",
-  "description" : "",
-  "categoryId" : null,
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 7, 8 ],
-  "status" : "OPEN"
-}, {
-  "id" : "435b740d-be46-4365-99c4-4dcd52527689",
-  "title" : "na bgalo το φαγητο",
-  "description" : "σλκφνλασδνφλξασδνφσλφκν",
-  "categoryId" : null,
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
   "deadline" : null,
   "status" : "OPEN"
 }, {
-  "id" : "bc0fad83-3041-43c5-add3-ad0e484727c5",
-  "title" : "ξανσλδκφναλσδκφν",
+  "id" : "d5f9b007-9c4d-4c5c-be41-7a0d5332fdd7",
+  "title" : "φα",
   "description" : "",
   "categoryId" : "6564ee7e-edc2-4e41-962f-90f8208986da",
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 2, 21 ],
+  "deadline" : [ 2025, 2, 18 ],
   "status" : "OPEN"
 }, {
-  "id" : "c81fb3bd-8d27-4ea1-b7dd-0bbd7d0fff7f",
-  "title" : "12312321312313",
-  "description" : "",
+  "id" : "b9f4acb7-e397-49f4-8eec-872c35da1dfa",
+  "title" : "33",
+  "description" : "φα2",
   "categoryId" : "6564ee7e-edc2-4e41-962f-90f8208986da",
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 5, 16 ],
-  "status" : "IN_PROGRESS"
+  "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
+  "deadline" : null,
+  "status" : "OPEN"
 }, {
-  "id" : "02a7e689-3d26-4c78-a0ec-2b08bd778178",
-  "title" : "δωασδωα",
-  "description" : "",
-  "categoryId" : null,
-  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : [ 2025, 6, 27 ],
+  "id" : "8090b83c-7c41-4002-be6c-2fb351d1f430",
+  "title" : "αριθ",
+  "description" : "3",
+  "categoryId" : "44b30784-bda8-4008-bb9f-de9eda37db0f",
+  "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
+  "deadline" : null,
   "status" : "OPEN"
 } ]

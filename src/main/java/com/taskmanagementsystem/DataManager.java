@@ -14,8 +14,9 @@ import java.util.*;
 
 /**
  * Central class that manages all categories, priorities, tasks, and reminders.
- * <p>
- * Provides methods to load/save JSON files, create/update/delete objects, and handle rules like:
+ *
+ * Provides methods to load/save JSON files, create/update/delete objects,
+ * and handle rules like:
  *  - Deleting tasks when a category is removed
  *  - Reassigning "Default" priority if a priority is removed
  *  - Checking and updating "Delayed" tasks if their deadline is passed
@@ -33,14 +34,14 @@ public class DataManager {
     private final ObservableList<Task> tasks = FXCollections.observableArrayList();
     private final ObservableList<Reminder> reminders = FXCollections.observableArrayList();
 
-    // We'll store the ID of the "Default" priority for easy reference.
+    // We'll store the ID of the "Default" priority for easy reference
     private String defaultPriorityId;
 
     /**
-     * Constructor initializes empty lists.
+     * Constructor
      */
     public DataManager() {
-        // Πλέον χρησιμοποιούμε τα έτοιμα ObservableList πεδία
+        // Αρχικοποίηση των λιστών γίνεται στο loadAllData
     }
 
     // ---------------------------------------------------------------
@@ -61,26 +62,26 @@ public class DataManager {
         File remFile = new File(REMINDERS_FILE);
 
         try {
-            // Προσωρινές λίστες για φόρτωση
+            // Φορτώνουμε προσωρινά σε απλές λίστες
             List<Category> loadedCategories = new ArrayList<>();
             List<Priority> loadedPriorities = new ArrayList<>();
             List<Task> loadedTasks = new ArrayList<>();
             List<Reminder> loadedReminders = new ArrayList<>();
 
             if (catFile.exists()) {
-                loadedCategories = mapper.readValue(catFile, new TypeReference<List<Category>>() {});
+                loadedCategories = mapper.readValue(catFile, new TypeReference<>() {});
             }
             if (prioFile.exists()) {
-                loadedPriorities = mapper.readValue(prioFile, new TypeReference<List<Priority>>() {});
+                loadedPriorities = mapper.readValue(prioFile, new TypeReference<>() {});
             }
             if (taskFile.exists()) {
-                loadedTasks = mapper.readValue(taskFile, new TypeReference<List<Task>>() {});
+                loadedTasks = mapper.readValue(taskFile, new TypeReference<>() {});
             }
             if (remFile.exists()) {
-                loadedReminders = mapper.readValue(remFile, new TypeReference<List<Reminder>>() {});
+                loadedReminders = mapper.readValue(remFile, new TypeReference<>() {});
             }
 
-            // Αντικαθιστούμε τα ObservableList περιεχόμενα
+            // Μεταφέρουμε τα δεδομένα στις ObservableLists
             categories.setAll(loadedCategories);
             priorities.setAll(loadedPriorities);
             tasks.setAll(loadedTasks);
@@ -90,10 +91,9 @@ public class DataManager {
             e.printStackTrace();
         }
 
-        // If no priorities exist or no "Default" priority found, create it.
+        // Αν δεν υπάρχει Default priority, δημιουργείται
         ensureDefaultPriorityExists();
-
-        // Check delayed tasks
+        // Ενημέρωση τυχόν delayed tasks
         updateDelayedTasks();
     }
 
@@ -128,6 +128,7 @@ public class DataManager {
         Optional<Priority> defaultP = priorities.stream()
                 .filter(p -> p.getName().equalsIgnoreCase("Default"))
                 .findFirst();
+
         if (defaultP.isEmpty()) {
             Priority def = new Priority("Default");
             priorities.add(def);
@@ -149,12 +150,10 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Category Management
     // ---------------------------------------------------------------
-
     public List<Category> getAllCategories() {
         return categories;
     }
 
-    // Επιπλέον μέθοδος για να παίρνουμε απευθείας το ObservableList
     public ObservableList<Category> getObservableCategories() {
         return categories;
     }
@@ -170,25 +169,25 @@ public class DataManager {
     }
 
     public void deleteCategory(Category category) {
-        // Remove tasks that have this category
+        // Διαγράφουμε όλες τις tasks που ανήκουν σε αυτήν
         List<String> taskIdsToRemove = new ArrayList<>();
         for (Task t : tasks) {
             if (t.getCategoryId() != null && t.getCategoryId().equals(category.getId())) {
                 taskIdsToRemove.add(t.getId());
             }
         }
-        // Remove reminders associated with those tasks
+        // Αφαιρούμε υπενθυμίσεις για όσες tasks διαγράφηκαν
         reminders.removeIf(r -> taskIdsToRemove.contains(r.getTaskId()));
-        // Remove the tasks
+        // Αφαιρούμε τις tasks
         tasks.removeIf(t -> taskIdsToRemove.contains(t.getId()));
-        // Finally remove the category
+
+        // Τέλος αφαιρούμε την κατηγορία
         categories.remove(category);
     }
 
     // ---------------------------------------------------------------
     // Priority Management
     // ---------------------------------------------------------------
-
     public List<Priority> getAllPriorities() {
         return priorities;
     }
@@ -204,21 +203,22 @@ public class DataManager {
     }
 
     public void renamePriority(Priority priority, String newName) {
-        // If it's the default priority, ignore
-        Priority defaultP = getDefaultPriority();
-        if (priority.getId().equals(defaultP.getId())) {
+        // Αν είναι η Default, αγνοείται
+        Priority def = getDefaultPriority();
+        if (priority.getId().equals(def.getId())) {
             return;
         }
         priority.setName(newName);
     }
 
     public void deletePriority(Priority priority) {
-        // If it's the default, do not delete
+        // Αν είναι η default, δεν διαγράφεται
         Priority def = getDefaultPriority();
         if (priority.getId().equals(def.getId())) {
             return;
         }
-        // Reassign tasks that used this priority to default
+
+        // Όσες tasks είχαν αυτό το priority, παίρνουν το Default
         for (Task t : tasks) {
             if (t.getPriorityId().equals(priority.getId())) {
                 t.setPriorityId(def.getId());
@@ -237,7 +237,6 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Task Management
     // ---------------------------------------------------------------
-
     public List<Task> getAllTasks() {
         return tasks;
     }
@@ -246,9 +245,11 @@ public class DataManager {
         return tasks;
     }
 
-    public Task createTask(String title, String description, Category category, Priority priority, LocalDate deadline) {
-        String categoryId = category != null ? category.getId() : null;
-        String priorityId = priority != null ? priority.getId() : getDefaultPriority().getId();
+    public Task createTask(String title, String description,
+                           Category category, Priority priority,
+                           LocalDate deadline) {
+        String categoryId = (category != null) ? category.getId() : null;
+        String priorityId = (priority != null) ? priority.getId() : getDefaultPriority().getId();
 
         Task task = new Task(title, description, categoryId, priorityId, deadline);
         tasks.add(task);
@@ -263,22 +264,20 @@ public class DataManager {
 
         task.setTitle(newTitle);
         task.setDescription(newDesc);
-        task.setCategoryId(newCategory != null ? newCategory.getId() : null);
-        task.setPriorityId(newPriority != null ? newPriority.getId() : getDefaultPriority().getId());
+        task.setCategoryId((newCategory != null) ? newCategory.getId() : null);
+        task.setPriorityId((newPriority != null) ? newPriority.getId() : getDefaultPriority().getId());
         task.setDeadline(newDeadline);
         task.setStatus(newStatus);
 
-        // Διαγράφουμε υπενθυμίσεις ΜΟΝΟ αν η εργασία άλλαξε από άλλη κατάσταση σε COMPLETED
+        // Αν από άλλη κατάσταση πέρασε σε COMPLETED, διαγράφουμε τις υπενθυμίσεις
         if (previousStatus != TaskStatus.COMPLETED && newStatus == TaskStatus.COMPLETED) {
             reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
             System.out.println("✅ All reminders for task '" + task.getTitle() + "' have been deleted.");
         }
-
-        saveAllData();
     }
 
     public void deleteTask(Task task) {
-        // Remove reminders
+        // Αφαιρούμε όλες τις reminders που ανήκουν σε αυτήν
         reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
         tasks.remove(task);
     }
@@ -286,7 +285,6 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Reminders
     // ---------------------------------------------------------------
-
     public List<Reminder> getAllReminders() {
         return reminders;
     }
@@ -302,6 +300,7 @@ public class DataManager {
         if (type == ReminderType.SPECIFIC_DATE && customDate == null) {
             throw new IllegalArgumentException("Reminder date cannot be empty for SPECIFIC_DATE.");
         }
+
         LocalDate deadline = task.getDeadline();
         if (deadline == null && type != ReminderType.SPECIFIC_DATE) {
             throw new IllegalArgumentException("Task has no deadline, cannot create this type of reminder.");
@@ -329,7 +328,6 @@ public class DataManager {
 
         Reminder reminder = new Reminder(task.getId(), type, reminderDate);
         reminders.add(reminder);
-        saveAllData();
         return reminder;
     }
 
@@ -337,7 +335,10 @@ public class DataManager {
         reminders.remove(reminder);
     }
 
-    public void updateReminder(Reminder reminder, Task newTask, ReminderType newType, LocalDate newDate) {
+    public void updateReminder(Reminder reminder,
+                               Task newTask,
+                               ReminderType newType,
+                               LocalDate newDate) {
         if (reminder == null) return;
 
         if (newType == ReminderType.SPECIFIC_DATE && newDate == null) {
@@ -349,6 +350,7 @@ public class DataManager {
             throw new IllegalArgumentException("Task has no deadline, cannot set this type of reminder.");
         }
 
+        // Υπολογίζουμε το σωστό reminderDate
         LocalDate reminderDate;
         switch (newType) {
             case ONE_DAY_BEFORE:
@@ -373,25 +375,13 @@ public class DataManager {
         reminder.setType(newType);
         reminder.setReminderDate(reminderDate);
 
-        // Αντικατάσταση μέσα στη λίστα
+        // Ενημερώνουμε τη λίστα με το τροποποιημένο αντικείμενο
         for (int i = 0; i < reminders.size(); i++) {
             if (reminders.get(i).getId().equals(reminder.getId())) {
                 reminders.set(i, reminder);
                 break;
             }
         }
-
-        saveAllData();
-    }
-
-    public List<Reminder> getRemindersByTask(Task task) {
-        List<Reminder> result = new ArrayList<>();
-        for (Reminder r : reminders) {
-            if (r.getTaskId().equals(task.getId())) {
-                result.add(r);
-            }
-        }
-        return result;
     }
 
     // ---------------------------------------------------------------

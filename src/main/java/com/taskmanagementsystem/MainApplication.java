@@ -26,26 +26,15 @@ public class MainApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        // 1. Load data from JSON
+        // 1. Load data from JSON (μόνο στην αρχή)
         dataManager.loadAllData();
 
         // 2. Ενημέρωση εκπρόθεσμων εργασιών
         for (Task task : dataManager.getAllTasks()) {
-            task.checkIfShouldBeDelayed(); // Μετατρέπει αυτόματα σε DELAYED αν η προθεσμία έχει περάσει
+            task.checkIfShouldBeDelayed(); // Μετατρέπει αυτόματα σε DELAYED αν έχει περάσει η προθεσμία
         }
 
-        // 3. Αποθήκευση αλλαγών πίσω στο JSON
-        dataManager.saveAllData();
-
-        // 4. Εμφάνιση μηνύματος αν υπάρχουν εκπρόθεσμες εργασίες
-        long delayedCount = dataManager.getAllTasks().stream()
-                .filter(t -> t.getStatus() == TaskStatus.DELAYED)
-                .count();
-        if (delayedCount > 0) {
-            showAlert("Delayed Tasks", "There are " + delayedCount + " delayed tasks!");
-        }
-
-        // 5. Δημιουργία του κύριου UI
+        // 4. Δημιουργία του κύριου UI
         BorderPane root = new BorderPane();
 
         // TOP: summary info
@@ -54,7 +43,7 @@ public class MainApplication extends Application {
 
         // CENTER: TabPane με όλες τις καρτέλες
         TabPane tabPane = new TabPane();
-        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE); // no close buttons
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
 
         Tab tasksTab = new Tab("Tasks", createTasksPane());
         Tab categoriesTab = new Tab("Categories", createCategoriesPane());
@@ -65,20 +54,30 @@ public class MainApplication extends Application {
         tabPane.getTabs().addAll(tasksTab, categoriesTab, prioritiesTab, remindersTab, searchTab);
         root.setCenter(tabPane);
 
-        // 6. Δημιουργία Scene και εμφάνιση παραθύρου
+        // 5. Δημιουργία Scene και εμφάνιση παραθύρου
         Scene scene = new Scene(root, 1000, 700);
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
         primaryStage.setTitle("MediaLab Assistant");
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // 7. Αρχική ενημέρωση των counters
+        // 6. Αρχική ενημέρωση των counters
         updateSummaryInfo();
+
+
+        // 3. Έλεγχος για delayed tasks -> εμφάνιση popup
+        long delayedCount = dataManager.getAllTasks().stream()
+        .filter(t -> t.getStatus() == TaskStatus.DELAYED)
+        .count();
+            if (delayedCount > 0) {
+                showAlert("Delayed Tasks", "There are " + delayedCount + " delayed tasks!");
+            }
+        
     }
 
     @Override
     public void stop() {
-        // Save data to JSON
+        // Αποθήκευση στο JSON αποκλειστικά κατά τον τερματισμό
         dataManager.saveAllData();
     }
 
@@ -86,9 +85,8 @@ public class MainApplication extends Application {
     // TOP BOX
     // ---------------------------------------------------------------
     private VBox createTopBox() {
-
         Label lblTitle = new Label("MediaLab Assistant");
-        lblTitle.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;"); // ✅ Μωβ χρώμα & bold
+        lblTitle.setStyle("-fx-font-size: 26px; -fx-font-weight: bold;");
 
         lblTotalTasks = new Label("Total tasks: 0");
         lblCompletedTasks = new Label("Completed tasks: 0");
@@ -121,7 +119,7 @@ public class MainApplication extends Application {
         long dueIn7 = allTasks.stream().filter(t -> {
             if (t.getDeadline() == null) return false;
             if (t.getStatus() == TaskStatus.COMPLETED) return false;
-            return !t.getDeadline().isBefore(LocalDate.now().minusDays(1)) // don't count if it's already past
+            return !t.getDeadline().isBefore(LocalDate.now().minusDays(1))
                     && !t.getDeadline().isAfter(LocalDate.now().plusDays(7));
         }).count();
 
@@ -152,8 +150,6 @@ public class MainApplication extends Application {
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         table.getColumns().addAll(colTitle, colDesc, colStatus);
-
-        // Χρησιμοποιούμε την "ζωντανή" λίστα από το DataManager
         table.setItems(dataManager.getObservableTasks());
 
         // FORM (right side) for add/edit
@@ -187,7 +183,7 @@ public class MainApplication extends Application {
                 LocalDate dl = dpDeadline.getValue();
                 Task t = dataManager.createTask(txtTitle.getText(), txtDesc.getText(), cat, prio, dl);
 
-                // If the user selected a status that is not null, set it
+                // Αν έχει επιλεγεί συγκεκριμένο status, το ορίζουμε
                 if (cmbStatus.getValue() != null) {
                     t.setStatus(cmbStatus.getValue());
                 }
@@ -229,7 +225,10 @@ public class MainApplication extends Application {
                     dl,
                     st
             );
+
+            // Ανανεώνουμε άμεσα την εμφάνιση του Status στη γραμμή του πίνακα
             table.refresh();
+
             showAlert("Success", "Task updated!");
             updateSummaryInfo();
         });
@@ -260,8 +259,11 @@ public class MainApplication extends Application {
             }
         });
 
-        formBox.getChildren().addAll(new Label("Manage Task"), txtTitle, txtDesc, cmbCategory, cmbPriority, dpDeadline, cmbStatus,
-                new HBox(10, btnAdd, btnUpdate, btnDelete));
+        formBox.getChildren().addAll(
+                new Label("Manage Task"),
+                txtTitle, txtDesc, cmbCategory, cmbPriority, dpDeadline, cmbStatus,
+                new HBox(10, btnAdd, btnUpdate, btnDelete)
+        );
 
         pane.setCenter(table);
         pane.setRight(formBox);
@@ -276,18 +278,19 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
-        // Χρήση της ObservableList από DataManager
         ListView<Category> listView = new ListView<>(dataManager.getObservableCategories());
         listView.setCellFactory(param -> new ListCell<>() {
             @Override
             protected void updateItem(Category item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) setText(null);
-                else setText(item.getName());
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
             }
         });
 
-        // Form for create/rename
         VBox formBox = new VBox(10);
         formBox.setPadding(new Insets(5));
 
@@ -325,8 +328,11 @@ public class MainApplication extends Application {
             updateSummaryInfo();
         });
 
-        formBox.getChildren().addAll(new Label("Category Name:"), txtCategoryName,
-                new HBox(10, btnAdd, btnRename, btnDelete));
+        formBox.getChildren().addAll(
+                new Label("Category Name:"),
+                txtCategoryName,
+                new HBox(10, btnAdd, btnRename, btnDelete)
+        );
 
         pane.setCenter(listView);
         pane.setRight(formBox);
@@ -346,12 +352,14 @@ public class MainApplication extends Application {
             @Override
             protected void updateItem(Priority item, boolean empty) {
                 super.updateItem(item, empty);
-                if (empty || item == null) setText(null);
-                else setText(item.getName());
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
             }
         });
 
-        // Form
         VBox formBox = new VBox(10);
         formBox.setPadding(new Insets(5));
 
@@ -390,7 +398,7 @@ public class MainApplication extends Application {
             updateSummaryInfo();
         });
 
-        // 🔹 Listener: Αν η επιλεγμένη προτεραιότητα είναι "Default", τα κουμπιά εξαφανίζονται!
+        // Εάν είναι το “Default”, αποκρύπτουμε τα Rename/Delete
         listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null && newVal.getName().equalsIgnoreCase("Default")) {
                 btnRename.setVisible(false);
@@ -401,8 +409,11 @@ public class MainApplication extends Application {
             }
         });
 
-        formBox.getChildren().addAll(new Label("Priority:"), txtPrioName,
-                new HBox(10, btnAdd, btnRename, btnDelete));
+        formBox.getChildren().addAll(
+                new Label("Priority:"),
+                txtPrioName,
+                new HBox(10, btnAdd, btnRename, btnDelete)
+        );
 
         pane.setCenter(listView);
         pane.setRight(formBox);
@@ -417,10 +428,9 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
-        // Πίνακας Υπενθυμίσεων
         TableView<Reminder> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        table.getStyleClass().add("table-view"); // Προσθήκη ίδιου στυλ με τα Tasks
+        table.getStyleClass().add("table-view");
 
         TableColumn<Reminder, String> colTaskTitle = new TableColumn<>("Task Title");
         colTaskTitle.setCellValueFactory(cell -> {
@@ -441,7 +451,6 @@ public class MainApplication extends Application {
         table.getColumns().addAll(colTaskTitle, colType, colDate);
         table.setItems(dataManager.getObservableReminders());
 
-        // Φόρμα Προσθήκης Υπενθύμισης
         VBox formBox = new VBox(10);
         formBox.setPadding(new Insets(5));
 
@@ -454,9 +463,9 @@ public class MainApplication extends Application {
 
         DatePicker dpCustomDate = new DatePicker();
         dpCustomDate.setPromptText("Select Date");
-        dpCustomDate.setDisable(true); // Αρχικά απενεργοποιημένο
+        dpCustomDate.setDisable(true);
 
-        // Αν επιλεγεί "SPECIFIC_DATE", ενεργοποιούμε το DatePicker
+        // Αν επιλέξουμε “SPECIFIC_DATE”, ενεργοποιείται το DatePicker
         cmbType.setOnAction(e -> {
             dpCustomDate.setDisable(cmbType.getValue() != ReminderType.SPECIFIC_DATE);
             if (dpCustomDate.isDisabled()) dpCustomDate.setValue(null);
@@ -472,7 +481,6 @@ public class MainApplication extends Application {
                 showAlert("Error", "Please select both a Task and Reminder Type.");
                 return;
             }
-
             if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
                 showAlert("Error", "Reminder date cannot be empty.");
                 return;
@@ -496,7 +504,6 @@ public class MainApplication extends Application {
             dataManager.deleteReminder(selected);
         });
 
-        // 🔹 ΝΕΟ: Επεξεργασία Υπενθύμισης
         Button btnEdit = new Button("Update Reminder");
         btnEdit.setOnAction(e -> {
             Reminder selected = table.getSelectionModel().getSelectedItem();
@@ -513,7 +520,6 @@ public class MainApplication extends Application {
                 showAlert("Error", "Please select a task and reminder type.");
                 return;
             }
-
             if (selectedType == ReminderType.SPECIFIC_DATE && selectedDate == null) {
                 showAlert("Error", "Reminder date cannot be empty.");
                 return;
@@ -527,7 +533,7 @@ public class MainApplication extends Application {
             }
         });
 
-        // Όταν επιλέγεται μια υπενθύμιση, γεμίζουν τα πεδία
+        // Γέμισμα πεδίων όταν επιλέγεται μια υπενθύμιση
         table.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 Task relatedTask = dataManager.getTaskById(newVal.getTaskId());
@@ -576,18 +582,21 @@ public class MainApplication extends Application {
 
         TableColumn<Task, String> colTitle = new TableColumn<>("Title");
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
+
         TableColumn<Task, String> colPrio = new TableColumn<>("Priority");
         colPrio.setCellValueFactory(cell -> {
             String pid = cell.getValue().getPriorityId();
             Priority p = dataManager.findPriorityById(pid);
             return new SimpleStringProperty(p != null ? p.getName() : "??");
         });
+
         TableColumn<Task, String> colCat = new TableColumn<>("Category");
         colCat.setCellValueFactory(cell -> {
             String cid = cell.getValue().getCategoryId();
             Category c = dataManager.findCategoryById(cid);
             return new SimpleStringProperty(c != null ? c.getName() : "??");
         });
+
         TableColumn<Task, String> colDeadline = new TableColumn<>("Deadline");
         colDeadline.setCellValueFactory(cell -> {
             LocalDate d = cell.getValue().getDeadline();
@@ -605,10 +614,12 @@ public class MainApplication extends Application {
             table.setItems(FXCollections.observableArrayList(results));
         });
 
-        box.getChildren().addAll(new Label("Search Criteria:"),
+        box.getChildren().addAll(
+                new Label("Search Criteria:"),
                 txtTitle, cmbCategory, cmbPriority, btnSearch,
                 new Label("Results:"),
-                table);
+                table
+        );
 
         return box;
     }
