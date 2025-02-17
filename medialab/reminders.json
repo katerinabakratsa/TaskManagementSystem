@@ -1,1 +1,6 @@
-[ ]
+[ {
+  "id" : "efc6096f-d379-4856-a50a-1de2bfc27b06",
+  "taskId" : "f948abff-2b70-4c89-8ebf-67f6269b8a5b",
+  "type" : "ONE_WEEK_BEFORE",
+  "reminderDate" : [ 2025, 3, 23 ]
+} ]

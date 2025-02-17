@@ -14,8 +14,8 @@ import java.util.*;
 
 /**
  * Central class that manages all categories, priorities, tasks, and reminders.
- * <p>
- * Provides methods to load/save JSON files, create/update/delete objects,
+ *
+ * Provides methods to load/save JSON files, create/update/delete objects, 
  * and handle rules like:
  *  - Deleting tasks when a category is removed
  *  - Reassigning "Default" priority if a priority is removed
@@ -28,20 +28,20 @@ public class DataManager {
     private static final String TASKS_FILE = MEDIALAB_FOLDER + "/tasks.json";
     private static final String REMINDERS_FILE = MEDIALAB_FOLDER + "/reminders.json";
 
-    // Χρησιμοποιούμε ObservableList αντί για απλό List
+    // Using ObservableList for live updates in the UI
     private final ObservableList<Category> categories = FXCollections.observableArrayList();
     private final ObservableList<Priority> priorities = FXCollections.observableArrayList();
     private final ObservableList<Task> tasks = FXCollections.observableArrayList();
     private final ObservableList<Reminder> reminders = FXCollections.observableArrayList();
 
-    // Θα αποθηκεύουμε το ID της "Default" priority για εύκολη αναφορά
+    // We'll store the ID of the "Default" priority for easy reference
     private String defaultPriorityId;
 
     /**
-     * Constructor
+     * Default constructor.
+     * Lists are loaded via loadAllData().
      */
     public DataManager() {
-        // Οι λίστες φορτώνονται από το loadAllData()
     }
 
     // ---------------------------------------------------------------
@@ -49,7 +49,8 @@ public class DataManager {
     // ---------------------------------------------------------------
 
     /**
-     * Loads all data (categories, priorities, tasks, reminders) from JSON files in the "medialab" folder.
+     * Loads all data (categories, priorities, tasks, reminders) 
+     * from JSON files in the "medialab" folder. 
      * If a file does not exist, it starts with an empty list for that file.
      */
     public void loadAllData() {
@@ -89,14 +90,13 @@ public class DataManager {
             e.printStackTrace();
         }
 
-        // Αν δεν υπάρχει Default priority, τη φτιάχνουμε
         ensureDefaultPriorityExists();
-        // Ενημέρωση τυχόν delayed tasks
         updateDelayedTasks();
     }
 
     /**
-     * Saves all data (categories, priorities, tasks, reminders) into separate JSON files in "medialab" folder.
+     * Saves all data (categories, priorities, tasks, reminders) 
+     * into separate JSON files in the "medialab" folder.
      */
     public void saveAllData() {
         ObjectMapper mapper = new ObjectMapper();
@@ -119,103 +119,121 @@ public class DataManager {
         }
     }
 
-    /**
-     * Αν δεν υπάρχει "Default" προτεραιότητα, τη φτιάχνουμε.
-     */
-    private void ensureDefaultPriorityExists() {
-        Optional<Priority> defaultP = priorities.stream()
-                .filter(p -> p.getName().equalsIgnoreCase("Default"))
-                .findFirst();
-        if (defaultP.isEmpty()) {
-            Priority def = new Priority("Default");
-            priorities.add(def);
-            defaultPriorityId = def.getId();
-        } else {
-            defaultPriorityId = defaultP.get().getId();
-        }
-    }
-
-    /**
-     * Ελέγχουμε ποιες εργασίες πρέπει να γίνουν "DELAYED".
-     */
-    private void updateDelayedTasks() {
-        for (Task t : tasks) {
-            t.checkIfShouldBeDelayed();
-        }
-    }
-
     // ---------------------------------------------------------------
     // Category Management
     // ---------------------------------------------------------------
+
+    /**
+     * Returns a List of all categories currently in memory.
+     * @return an unmodifiable List of Category objects.
+     */
     public List<Category> getAllCategories() {
         return categories;
     }
 
+    /**
+     * Returns an ObservableList of all categories, used for UI bindings.
+     * @return the ObservableList of Category objects.
+     */
     public ObservableList<Category> getObservableCategories() {
         return categories;
     }
 
+    /**
+     * Creates a new Category with the given name and adds it to the internal list.
+     * @param name the name of the new category
+     * @return the newly created Category object
+     */
     public Category createCategory(String name) {
         Category cat = new Category(name);
         categories.add(cat);
         return cat;
     }
 
+    /**
+     * Renames an existing Category by setting a new name.
+     * @param category the Category object to rename
+     * @param newName  the new name
+     */
     public void renameCategory(Category category, String newName) {
         category.setName(newName);
     }
 
+    /**
+     * Deletes the specified category and removes all tasks belonging to it,
+     * along with any reminders linked to those tasks.
+     * @param category the Category to delete
+     */
     public void deleteCategory(Category category) {
-        // Βρίσκουμε τις εργασίες που ανήκουν σε αυτήν
         List<String> taskIdsToRemove = new ArrayList<>();
         for (Task t : tasks) {
             if (t.getCategoryId() != null && t.getCategoryId().equals(category.getId())) {
                 taskIdsToRemove.add(t.getId());
             }
         }
-        // Αφαιρούμε υπενθυμίσεις για αυτές τις εργασίες
+        // Remove reminders for those tasks
         reminders.removeIf(r -> taskIdsToRemove.contains(r.getTaskId()));
-        // Αφαιρούμε τις εργασίες
+        // Remove the tasks
         tasks.removeIf(t -> taskIdsToRemove.contains(t.getId()));
-
-        // Τέλος αφαιρούμε την κατηγορία
+        // Finally remove the category
         categories.remove(category);
     }
 
     // ---------------------------------------------------------------
     // Priority Management
     // ---------------------------------------------------------------
+
+    /**
+     * Returns a List of all priorities.
+     * @return a List of Priority objects
+     */
     public List<Priority> getAllPriorities() {
         return priorities;
     }
 
+    /**
+     * Returns an ObservableList of all priorities, used for UI bindings.
+     * @return the ObservableList of Priority objects
+     */
     public ObservableList<Priority> getObservablePriorities() {
         return priorities;
     }
 
+    /**
+     * Creates a new Priority with the given name and adds it to the internal list.
+     * @param name the name of the new priority
+     * @return the newly created Priority
+     */
     public Priority createPriority(String name) {
         Priority p = new Priority(name);
         priorities.add(p);
         return p;
     }
 
+    /**
+     * Renames a Priority (ignored if it is the "Default" priority).
+     * @param priority the Priority to rename
+     * @param newName  the new name
+     */
     public void renamePriority(Priority priority, String newName) {
-        // Αν είναι η Default, αγνοείται
         Priority def = getDefaultPriority();
         if (priority.getId().equals(def.getId())) {
-            return;
+            return; // do nothing if it's Default
         }
         priority.setName(newName);
     }
 
+    /**
+     * Deletes a Priority. If it is the default priority, nothing happens.
+     * If it's not default, all tasks using it are reassigned to the default priority.
+     * @param priority the Priority to delete
+     */
     public void deletePriority(Priority priority) {
-        // Αν είναι η default, δεν διαγράφεται
         Priority def = getDefaultPriority();
         if (priority.getId().equals(def.getId())) {
-            return;
+            return; // can't remove default
         }
-
-        // Όσες tasks είχαν αυτή την Priority, αποκτούν τη Default
+        // reassign tasks
         for (Task t : tasks) {
             if (t.getPriorityId().equals(priority.getId())) {
                 t.setPriorityId(def.getId());
@@ -224,6 +242,10 @@ public class DataManager {
         priorities.remove(priority);
     }
 
+    /**
+     * Gets the default priority object.
+     * @return the Priority that is considered "Default"
+     */
     public Priority getDefaultPriority() {
         return priorities.stream()
                 .filter(p -> p.getId().equals(defaultPriorityId))
@@ -234,14 +256,32 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Task Management
     // ---------------------------------------------------------------
+
+    /**
+     * Returns a list of all tasks currently loaded.
+     * @return an unmodifiable list of Task objects
+     */
     public List<Task> getAllTasks() {
         return tasks;
     }
 
+    /**
+     * Returns an ObservableList of all tasks, used for UI bindings.
+     * @return the ObservableList of Task objects
+     */
     public ObservableList<Task> getObservableTasks() {
         return tasks;
     }
 
+    /**
+     * Creates a new Task with the provided data and adds it to the internal list.
+     * @param title the title of the task
+     * @param description the description
+     * @param category the Category (can be null)
+     * @param priority the Priority (can be null -> use Default)
+     * @param deadline the deadline (LocalDate) or null
+     * @return the newly created Task object
+     */
     public Task createTask(String title, String description,
                            Category category, Priority priority,
                            LocalDate deadline) {
@@ -253,6 +293,19 @@ public class DataManager {
         return task;
     }
 
+    /**
+     * Updates the fields of an existing Task (title, desc, category, priority, deadline, status).
+     * If the new status is COMPLETED and the old status was not, 
+     * all reminders of that task are removed.
+     *
+     * @param task the Task to update
+     * @param newTitle new title
+     * @param newDesc new description
+     * @param newCategory new Category (null if none)
+     * @param newPriority new Priority (null => default)
+     * @param newDeadline new deadline date
+     * @param newStatus new TaskStatus
+     */
     public void updateTask(Task task, String newTitle, String newDesc,
                            Category newCategory, Priority newPriority,
                            LocalDate newDeadline, TaskStatus newStatus) {
@@ -266,12 +319,17 @@ public class DataManager {
         task.setDeadline(newDeadline);
         task.setStatus(newStatus);
 
+        // If we just transitioned to COMPLETED from another status, remove reminders
         if (previousStatus != TaskStatus.COMPLETED && newStatus == TaskStatus.COMPLETED) {
             reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
             System.out.println("✅ All reminders for task '" + task.getTitle() + "' have been deleted.");
         }
     }
 
+    /**
+     * Deletes the given Task and all its associated Reminders.
+     * @param task the Task to delete
+     */
     public void deleteTask(Task task) {
         reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
         tasks.remove(task);
@@ -280,14 +338,36 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Reminders
     // ---------------------------------------------------------------
+
+    /**
+     * Returns a List of all reminders.
+     * @return a list of Reminder objects
+     */
     public List<Reminder> getAllReminders() {
         return reminders;
     }
 
+    /**
+     * Returns an ObservableList of all reminders, used for UI bindings.
+     * @return the ObservableList of Reminder objects
+     */
     public ObservableList<Reminder> getObservableReminders() {
         return reminders;
     }
 
+    /**
+     * Creates a new Reminder for a given Task, checking constraints such as:
+     * - The task must not be COMPLETED
+     * - If type != SPECIFIC_DATE, the task must have a deadline
+     * - The computed or specified reminder date must not be in the past
+     *
+     * @param task the Task
+     * @param type the ReminderType (ONE_DAY_BEFORE, etc.)
+     * @param customDate a LocalDate if type == SPECIFIC_DATE
+     * @return the newly created Reminder object
+     * @throws IllegalStateException if the task is completed
+     * @throws IllegalArgumentException if the date is invalid or in the past
+     */
     public Reminder createReminder(Task task, ReminderType type, LocalDate customDate) {
         if (task.getStatus() == TaskStatus.COMPLETED) {
             throw new IllegalStateException("Cannot create reminder for a Completed task.");
@@ -326,10 +406,23 @@ public class DataManager {
         return reminder;
     }
 
+    /**
+     * Deletes a specific Reminder.
+     * @param reminder the Reminder to delete
+     */
     public void deleteReminder(Reminder reminder) {
         reminders.remove(reminder);
     }
 
+    /**
+     * Updates an existing Reminder with new Task, type, and date constraints.
+     *
+     * @param reminder the Reminder to update
+     * @param newTask the new Task to associate with
+     * @param newType the new ReminderType
+     * @param newDate the new LocalDate if type == SPECIFIC_DATE
+     * @throws IllegalArgumentException if the date is invalid or in the past
+     */
     public void updateReminder(Reminder reminder,
                                Task newTask,
                                ReminderType newType,
@@ -380,6 +473,15 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Search
     // ---------------------------------------------------------------
+
+    /**
+     * Searches tasks by optional title (substring match), category, and priority.
+     *
+     * @param title partial title to match (ignore case)
+     * @param category category to match (or null)
+     * @param priority priority to match (or null)
+     * @return a List of Task objects matching the given criteria
+     */
     public List<Task> searchTasks(String title, Category category, Priority priority) {
         return tasks.stream().filter(task -> {
             boolean matchTitle = true;
@@ -403,6 +505,12 @@ public class DataManager {
     // ---------------------------------------------------------------
     // Helper lookups
     // ---------------------------------------------------------------
+
+    /**
+     * Finds a Category by its unique ID.
+     * @param categoryId the ID of the Category
+     * @return the Category object, or null if not found
+     */
     public Category findCategoryById(String categoryId) {
         if (categoryId == null) return null;
         return categories.stream()
@@ -411,6 +519,11 @@ public class DataManager {
                 .orElse(null);
     }
 
+    /**
+     * Finds a Priority by its unique ID.
+     * @param priorityId the ID of the Priority
+     * @return the Priority object, or null if not found
+     */
     public Priority findPriorityById(String priorityId) {
         if (priorityId == null) return null;
         return priorities.stream()
@@ -419,10 +532,44 @@ public class DataManager {
                 .orElse(null);
     }
 
+    /**
+     * Finds a Task by its unique ID.
+     * @param taskId the ID of the Task
+     * @return the Task object, or null if not found
+     */
     public Task getTaskById(String taskId) {
         return tasks.stream()
                 .filter(task -> task.getId().equals(taskId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    // ---------------------------------------------------------------
+    // Private Helpers
+    // ---------------------------------------------------------------
+
+    /**
+     * Ensures that a "Default" priority exists, or creates one if missing.
+     */
+    private void ensureDefaultPriorityExists() {
+        Optional<Priority> defaultP = priorities.stream()
+                .filter(p -> p.getName().equalsIgnoreCase("Default"))
+                .findFirst();
+        if (defaultP.isEmpty()) {
+            Priority def = new Priority("Default");
+            priorities.add(def);
+            defaultPriorityId = def.getId();
+        } else {
+            defaultPriorityId = defaultP.get().getId();
+        }
+    }
+
+    /**
+     * Checks if any tasks need to be labeled "DELAYED" (deadline passed, not completed).
+     */
+    private void updateDelayedTasks() {
+        for (Task t : tasks) {
+            t.checkIfShouldBeDelayed();
+        }
     }
 }

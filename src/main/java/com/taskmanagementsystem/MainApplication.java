@@ -27,7 +27,7 @@ public class MainApplication extends Application {
     private Label lblDelayedTasks;
     private Label lblDeadline7Days;
 
-    // Αναφορά στο TableView των tasks
+    // Αναφορά στο TableView των tasks (για να το ανανεώνουμε σε φίλτρα κ.λπ.)
     private TableView<Task> tasksTable;
 
     // Ειδική “dummy” κατηγορία για την επιλογή "All Categories"
@@ -36,7 +36,7 @@ public class MainApplication extends Application {
     // Το ComboBox για το filter
     private ComboBox<Category> cmbFilterCategory;
 
-    // Θα διατηρούμε μια ξεχωριστή λίστα που έχει πάντα
+    // Θα διατηρούμε μια ξεχωριστή λίστα που περιέχει:
     // [“All Categories” + (όλες τις πραγματικές από το dataManager)]
     private final ObservableList<Category> combinedFilterCategories = FXCollections.observableArrayList();
 
@@ -45,12 +45,12 @@ public class MainApplication extends Application {
         // 1. Load data from JSON
         dataManager.loadAllData();
 
-        // 2. Ενημέρωση εκπρόθεσμων
+        // 2. Ενημέρωση εκπρόθεσμων εργασιών
         for (Task task : dataManager.getAllTasks()) {
             task.checkIfShouldBeDelayed();
         }
 
-        // -- Δημιουργία κύριου layout
+        // -- Δημιουργούμε το κύριο layout
         BorderPane root = new BorderPane();
 
         // TOP: summary info
@@ -70,7 +70,7 @@ public class MainApplication extends Application {
         tabPane.getTabs().addAll(tasksTab, categoriesTab, prioritiesTab, remindersTab, searchTab);
         root.setCenter(tabPane);
 
-        // 3. Scene + Show
+        // 3. Φτιάχνουμε Scene, δείχνουμε παράθυρο
         Scene scene = new Scene(root, 1000, 700);
         scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
 
@@ -81,7 +81,7 @@ public class MainApplication extends Application {
         // 4. Αρχική ενημέρωση counters
         updateSummaryInfo();
 
-        // 5. Εμφάνιση popup delayed tasks (μετά το άνοιγμα)
+        // 5. Εμφάνιση popup καθυστερημένων εργασιών, αφού έχει εμφανιστεί το παράθυρο
         Platform.runLater(() -> {
             long delayedCount = dataManager.getAllTasks().stream()
                     .filter(t -> t.getStatus() == TaskStatus.DELAYED)
@@ -129,7 +129,7 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Ενημερώνουμε τους counters
+     * Ενημερώνουμε τους μετρητές (συνολικών tasks, completed, delayed, dueIn7)
      */
     private void updateSummaryInfo() {
         List<Task> allTasks = dataManager.getAllTasks();
@@ -150,7 +150,7 @@ public class MainApplication extends Application {
     }
 
     // ---------------------------------------------------------------
-    // TAB 1: TASKS (με φίλτρο κατηγορίας)
+    // TAB 1: TASKS (με φίλτρο κατηγορίας “All Categories”)
     // ---------------------------------------------------------------
     private Pane createTasksPane() {
         BorderPane pane = new BorderPane();
@@ -171,8 +171,7 @@ public class MainApplication extends Application {
         Label lblFilter = new Label("Filter by Category:");
 
         cmbFilterCategory = new ComboBox<>(combinedFilterCategories);
-        // Θέτουμε αρχικά την τιμή στο “All Categories”
-        cmbFilterCategory.setValue(allCategoryPlaceholder);
+        cmbFilterCategory.setValue(allCategoryPlaceholder); // Αρχικά εμφανίζει “All Categories”
         cmbFilterCategory.setConverter(ConverterUtils.getCategoryConverter());
 
         tasksTable = new TableView<>();
@@ -190,7 +189,7 @@ public class MainApplication extends Application {
         tasksTable.getColumns().addAll(colTitle, colDesc, colStatus);
         tasksTable.setItems(dataManager.getObservableTasks());
 
-        // Όταν αλλάζει η επιλογή, φιλτράρουμε
+        // Όταν αλλάξει το value στο ComboBox, φιλτράρουμε
         cmbFilterCategory.valueProperty().addListener((obs, oldVal, newVal) -> {
             applyCategoryFilter();
         });
@@ -244,7 +243,7 @@ public class MainApplication extends Application {
                 dpDeadline.setValue(null);
                 cmbStatus.setValue(null);
 
-                // Ξαναφιλτράρουμε σε περίπτωση που ο πίνακας είχε φίλτρο
+                // Εφαρμόζουμε ξανά το φίλτρο
                 applyCategoryFilter();
 
             } catch (Exception ex) {
@@ -291,7 +290,6 @@ public class MainApplication extends Application {
             applyCategoryFilter();
         });
 
-        // Όταν επιλέγεται μια εργασία στον πίνακα
         tasksTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 txtTitle.setText(newVal.getTitle());
@@ -319,7 +317,7 @@ public class MainApplication extends Application {
     }
 
     /**
-     * Εφαρμόζει το φίλτρο κατηγορίας στον πίνακα
+     * Εφαρμόζει το φίλτρο κατηγορίας στον πίνακα εργασιών.
      */
     private void applyCategoryFilter() {
         Category selectedCat = cmbFilterCategory.getValue();
@@ -337,16 +335,16 @@ public class MainApplication extends Application {
 
     /**
      * Ανανεώνει τη λίστα combinedFilterCategories,
-     * ώστε να περιέχει πάντα "All Categories" + (όσες υπάρχουν στο dataManager).
+     * ώστε να περιέχει πάντα "All Categories" + τις κανονικές κατηγορίες από το dataManager.
      */
     private void updateFilterCategoriesList() {
         combinedFilterCategories.clear();
-        // Πρώτα βάζουμε το dummy
+        // Πρώτα “All Categories”
         allCategoryPlaceholder = new Category("All Categories");
         allCategoryPlaceholder.setId("ALL");
         combinedFilterCategories.add(allCategoryPlaceholder);
 
-        // Μετά προσθέτουμε τις πραγματικές
+        // Μετά οι πραγματικές από το DataManager
         combinedFilterCategories.addAll(dataManager.getObservableCategories());
     }
 
@@ -397,9 +395,6 @@ public class MainApplication extends Application {
             dataManager.renameCategory(selected, txtCategoryName.getText());
             txtCategoryName.clear();
 
-            // Επειδή μετονομάστηκε, η λίστα θα ενημερωθεί αυτόματα
-            // στο ListView (ίδιο object). Αλλά και το φίλτρο
-            // μπορεί να θέλει refresh
             updateFilterCategoriesList();
         });
 
@@ -414,7 +409,6 @@ public class MainApplication extends Application {
             showAlert("Success", "Category and related tasks removed!");
             updateSummaryInfo();
 
-            // Ενημερώνουμε το φίλτρο
             updateFilterCategoriesList();
         });
 
