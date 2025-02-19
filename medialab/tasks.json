@@ -2,18 +2,18 @@
   "id" : "407e63fd-20ae-4e33-9334-18486a3f58d8",
   "title" : "aaa",
   "description" : "",
-  "categoryId" : null,
+  "categoryId" : "e230d990-0bfe-4bcc-8e06-841b1f3abbe0",
   "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
-  "deadline" : null,
+  "deadline" : [ 2025, 2, 21 ],
   "status" : "OPEN"
 }, {
   "id" : "d45c53c5-8762-4593-94c8-5a4eb5125189",
   "title" : "33",
   "description" : "",
   "categoryId" : null,
-  "priorityId" : "7dcb9a9e-a64a-4774-bf55-8b8b16931c5f",
-  "deadline" : null,
-  "status" : "OPEN"
+  "priorityId" : "50c8dbb4-90bf-45cc-9f12-2c9b573bd54f",
+  "deadline" : [ 2025, 2, 18 ],
+  "status" : "DELAYED"
 }, {
   "id" : "f948abff-2b70-4c89-8ebf-67f6269b8a5b",
   "title" : "33322",

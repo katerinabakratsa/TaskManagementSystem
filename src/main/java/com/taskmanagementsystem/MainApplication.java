@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -39,6 +40,13 @@ public class MainApplication extends Application {
     // Θα διατηρούμε μια ξεχωριστή λίστα που περιέχει:
     // [“All Categories” + (όλες τις πραγματικές από το dataManager)]
     private final ObservableList<Category> combinedFilterCategories = FXCollections.observableArrayList();
+
+    // ---- Search Tab controls (για να κάνουμε refresh αυτόματα) ----
+    private TextField txtSearchTitle;
+    private ComboBox<Category> cmbSearchCategory;
+    private ComboBox<Priority> cmbSearchPriority;
+    private TableView<Task> searchTable;         // πίνακας αναζήτησης
+    private FilteredList<Task> filteredTasks;    // φίλτρο αναζήτησης πάνω στα tasks
 
     @Override
     public void start(Stage primaryStage) {
@@ -232,8 +240,7 @@ public class MainApplication extends Application {
                 }
 
                 showAlert("Success", "Task created successfully!");
-                updateSummaryInfo();
-                tasksTable.refresh();
+                refreshAllTablesAndCounters();
 
                 // Καθαρισμός
                 txtTitle.clear();
@@ -271,9 +278,8 @@ public class MainApplication extends Application {
                     dl,
                     st);
 
-            tasksTable.refresh();
             showAlert("Success", "Task updated!");
-            updateSummaryInfo();
+            refreshAllTablesAndCounters();
             applyCategoryFilter();
         });
 
@@ -286,7 +292,7 @@ public class MainApplication extends Application {
             }
             dataManager.deleteTask(selected);
             showAlert("Success", "Task deleted.");
-            updateSummaryInfo();
+            refreshAllTablesAndCounters();
             applyCategoryFilter();
         });
 
@@ -331,6 +337,7 @@ public class MainApplication extends Application {
                     .collect(Collectors.toList());
             tasksTable.setItems(FXCollections.observableArrayList(filtered));
         }
+        tasksTable.refresh();
     }
 
     /**
@@ -379,8 +386,7 @@ public class MainApplication extends Application {
             if (txtCategoryName.getText().isEmpty()) return;
             dataManager.createCategory(txtCategoryName.getText());
             txtCategoryName.clear();
-
-            // Ανανεώνουμε το φίλτρο (Tasks tab)
+            refreshAllTablesAndCounters();
             updateFilterCategoriesList();
         });
 
@@ -394,7 +400,7 @@ public class MainApplication extends Application {
             if (txtCategoryName.getText().isEmpty()) return;
             dataManager.renameCategory(selected, txtCategoryName.getText());
             txtCategoryName.clear();
-
+            refreshAllTablesAndCounters();
             updateFilterCategoriesList();
         });
 
@@ -407,8 +413,7 @@ public class MainApplication extends Application {
             }
             dataManager.deleteCategory(selected);
             showAlert("Success", "Category and related tasks removed!");
-            updateSummaryInfo();
-
+            refreshAllTablesAndCounters();
             updateFilterCategoriesList();
         });
 
@@ -455,6 +460,7 @@ public class MainApplication extends Application {
             if (txtPrioName.getText().isEmpty()) return;
             dataManager.createPriority(txtPrioName.getText());
             txtPrioName.clear();
+            refreshAllTablesAndCounters();
         });
 
         Button btnRename = new Button("Rename Priority");
@@ -467,7 +473,7 @@ public class MainApplication extends Application {
             if (txtPrioName.getText().isEmpty()) return;
             dataManager.renamePriority(selected, txtPrioName.getText());
             txtPrioName.clear();
-            updateSummaryInfo();
+            refreshAllTablesAndCounters();
         });
 
         Button btnDelete = new Button("Delete Priority");
@@ -479,7 +485,10 @@ public class MainApplication extends Application {
             }
             dataManager.deletePriority(selected);
             showAlert("Success", "Priority deleted or replaced with Default in tasks.");
-            updateSummaryInfo();
+            // Με το που γίνεται εδώ η διαγραφή, όσα tasks είχαν το priority 
+            // ανατίθενται σε default. Καλούμε refreshAllTablesAndCounters()
+            // για άμεση ενημέρωση στην οθόνη.
+            refreshAllTablesAndCounters();
         });
 
         // Αν είναι το “Default”, κρύβουμε Rename/Delete
@@ -575,6 +584,7 @@ public class MainApplication extends Application {
             try {
                 dataManager.createReminder(selectedTask, selectedType, selectedDate);
                 showAlert("Success", "Reminder added successfully!");
+                refreshAllTablesAndCounters();
             } catch (Exception ex) {
                 showAlert("Error", ex.getMessage());
             }
@@ -588,6 +598,7 @@ public class MainApplication extends Application {
                 return;
             }
             dataManager.deleteReminder(selected);
+            refreshAllTablesAndCounters();
         });
 
         Button btnEdit = new Button("Update Reminder");
@@ -614,6 +625,7 @@ public class MainApplication extends Application {
             try {
                 dataManager.updateReminder(selected, selectedTask, selectedType, selectedDate);
                 showAlert("Success", "Reminder updated successfully!");
+                refreshAllTablesAndCounters();
             } catch (Exception ex) {
                 showAlert("Error", ex.getMessage());
             }
@@ -649,8 +661,8 @@ public class MainApplication extends Application {
         VBox box = new VBox(10);
         box.setPadding(new Insets(10));
 
-        TextField txtTitle = new TextField();
-        txtTitle.setPromptText("Search by title (partial)");
+        txtSearchTitle = new TextField();
+        txtSearchTitle.setPromptText("Search by title (partial)");
 
         // Δημιουργούμε 2 "placeholder" κατηγορίες: ALL (no filter) και NONE (tasks χωρίς κατηγορία)
         Category allCategoryPlaceholder = new Category("All (No Filter)");
@@ -664,18 +676,19 @@ public class MainApplication extends Application {
         searchCategories.add(noneCategoryPlaceholder);
         searchCategories.addAll(dataManager.getObservableCategories());
 
-        ComboBox<Category> cmbCategory = new ComboBox<>(searchCategories);
-        cmbCategory.setPromptText("Category");
-        cmbCategory.setConverter(ConverterUtils.getCategoryConverter());
+        cmbSearchCategory = new ComboBox<>(searchCategories);
+        cmbSearchCategory.setPromptText("Category");
+        cmbSearchCategory.setConverter(ConverterUtils.getCategoryConverter());
 
-        ComboBox<Priority> cmbPriority = new ComboBox<>(dataManager.getObservablePriorities());
-        cmbPriority.setPromptText("Priority (optional)");
-        cmbPriority.setConverter(ConverterUtils.getPriorityConverter());
+        cmbSearchPriority = new ComboBox<>(dataManager.getObservablePriorities());
+        cmbSearchPriority.setPromptText("Priority (optional)");
+        cmbSearchPriority.setConverter(ConverterUtils.getPriorityConverter());
 
-        Button btnSearch = new Button("Search");
+        // Χρησιμοποιούμε FilteredList ώστε οι αλλαγές στα tasks να εμφανίζονται αυτόματα
+        filteredTasks = new FilteredList<>(dataManager.getObservableTasks(), t -> true);
 
-        TableView<Task> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        searchTable = new TableView<>(filteredTasks);
+        searchTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         TableColumn<Task, String> colTitle = new TableColumn<>("Title");
         colTitle.setCellValueFactory(new PropertyValueFactory<>("title"));
@@ -700,42 +713,69 @@ public class MainApplication extends Application {
             return new SimpleStringProperty(d != null ? d.toString() : "");
         });
 
-        table.getColumns().addAll(colTitle, colPrio, colCat, colDeadline);
+        searchTable.getColumns().addAll(colTitle, colPrio, colCat, colDeadline);
 
-        btnSearch.setOnAction(e -> {
-            Category cat = cmbCategory.getValue();
-            Priority prio = cmbPriority.getValue();
-            String titleFilter = txtTitle.getText();
+        // Χρησιμοποιούμε listeners για να φιλτράρουμε αυτόματα κάθε φορά που αλλάζουν τα κριτήρια
+        txtSearchTitle.textProperty().addListener((obs, oldVal, newVal) -> applySearchFilter());
+        cmbSearchCategory.valueProperty().addListener((obs, oldVal, newVal) -> applySearchFilter());
+        cmbSearchPriority.valueProperty().addListener((obs, oldVal, newVal) -> applySearchFilter());
 
-            // Αν το cat είναι null ή "ALL", δεν εφαρμόζουμε φίλτρο κατηγορίας.
-            // Αν είναι "NONE", φέρνουμε μόνο tasks χωρίς κατηγορία.
-            // Αλλιώς, φέρνουμε tasks της συγκεκριμένης κατηγορίας.
-            List<Task> results;
-            if (cat == null || "ALL".equals(cat.getId())) {
-                // no category filter
-                results = dataManager.searchTasks(titleFilter, null, prio);
-            } else if ("NONE".equals(cat.getId())) {
-                // tasks with no category
-                results = dataManager.searchTasksNoCategory(titleFilter, prio);
-            } else {
-                // real category
-                results = dataManager.searchTasks(titleFilter, cat, prio);
-            }
-
-            table.setItems(FXCollections.observableArrayList(results));
-        });
+        // Αρχικό φιλτράρισμα
+        applySearchFilter();
 
         box.getChildren().addAll(
                 new Label("Search Criteria:"),
-                txtTitle,
-                cmbCategory,
-                cmbPriority,
-                btnSearch,
+                txtSearchTitle,
+                cmbSearchCategory,
+                cmbSearchPriority,
                 new Label("Results:"),
-                table
+                searchTable
         );
 
         return box;
+    }
+
+    /**
+     * Εφαρμόζει το φίλτρο αναζήτησης στα tasks με βάση τα πεδία:
+     * - txtSearchTitle
+     * - cmbSearchCategory
+     * - cmbSearchPriority
+     */
+    private void applySearchFilter() {
+        Category cat = cmbSearchCategory.getValue();
+        Priority prio = cmbSearchPriority.getValue();
+        String titleFilter = txtSearchTitle.getText();
+
+        filteredTasks.setPredicate(task -> {
+            // Έλεγχος τίτλου (αν δοθεί)
+            if (titleFilter != null && !titleFilter.isEmpty()) {
+                if (task.getTitle() == null
+                        || !task.getTitle().toLowerCase().contains(titleFilter.toLowerCase())) {
+                    return false;
+                }
+            }
+            // Έλεγχος κατηγορίας (ALL => no filter, NONE => only null category)
+            if (cat != null && !"ALL".equals(cat.getId())) {
+                if ("NONE".equals(cat.getId())) {
+                    // μόνο tasks χωρίς category
+                    if (task.getCategoryId() != null) return false;
+                } else {
+                    // συγκεκριμένη κατηγορία
+                    if (!cat.getId().equals(task.getCategoryId())) {
+                        return false;
+                    }
+                }
+            }
+            // Έλεγχος priority (αν επιλεγεί)
+            if (prio != null) {
+                if (!prio.getId().equals(task.getPriorityId())) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        searchTable.refresh();
     }
 
     // ---------------------------------------------------------------
@@ -747,6 +787,24 @@ public class MainApplication extends Application {
         alert.setHeaderText(null);
         alert.setContentText(msg);
         alert.showAndWait();
+    }
+
+    /**
+     * Καλείται όταν γίνεται κάποια αλλαγή (π.χ. προσθήκη/διαγραφή task/priority κλπ)
+     * για να κάνουμε refresh σε πίνακες, αναζήτηση και counters.
+     */
+    private void refreshAllTablesAndCounters() {
+        updateSummaryInfo();
+
+        // Ανανεώνουμε πίνακα tasks
+        if (tasksTable != null) {
+            tasksTable.refresh();
+        }
+
+        // Εφαρμόζουμε ξανά το φίλτρο αναζήτησης στο Search tab
+        if (filteredTasks != null) {
+            applySearchFilter();
+        }
     }
 
     public static void main(String[] args) {

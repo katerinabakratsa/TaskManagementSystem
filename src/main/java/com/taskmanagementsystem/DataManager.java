@@ -15,7 +15,7 @@ import java.util.*;
 /**
  * Central class that manages all categories, priorities, tasks, and reminders.
  *
- * Provides methods to load/save JSON files, create/update/delete objects, 
+ * Provides methods to load/save JSON files, create/update/delete objects,
  * and handle rules like:
  *  - Deleting tasks when a category is removed
  *  - Reassigning "Default" priority if a priority is removed
@@ -49,8 +49,8 @@ public class DataManager {
     // ---------------------------------------------------------------
 
     /**
-     * Loads all data (categories, priorities, tasks, reminders) 
-     * from JSON files in the "medialab" folder. 
+     * Loads all data (categories, priorities, tasks, reminders)
+     * from JSON files in the "medialab" folder.
      * If a file does not exist, it starts with an empty list for that file.
      */
     public void loadAllData() {
@@ -95,7 +95,7 @@ public class DataManager {
     }
 
     /**
-     * Saves all data (categories, priorities, tasks, reminders) 
+     * Saves all data (categories, priorities, tasks, reminders)
      * into separate JSON files in the "medialab" folder.
      */
     public void saveAllData() {
@@ -225,7 +225,8 @@ public class DataManager {
 
     /**
      * Deletes a Priority. If it is the default priority, nothing happens.
-     * If it's not default, all tasks using it are reassigned to the default priority.
+     * If it's not default, all tasks using it are reassigned to the default priority,
+     * and the given priority is removed.
      * @param priority the Priority to delete
      */
     public void deletePriority(Priority priority) {
@@ -295,7 +296,7 @@ public class DataManager {
 
     /**
      * Updates the fields of an existing Task (title, desc, category, priority, deadline, status).
-     * If the new status is COMPLETED and the old status was not, 
+     * If the new status is COMPLETED and the old status was not,
      * all reminders of that task are removed.
      *
      * @param task the Task to update
@@ -324,6 +325,9 @@ public class DataManager {
             reminders.removeIf(r -> r.getTaskId().equals(task.getId()));
             System.out.println("✅ All reminders for task '" + task.getTitle() + "' have been deleted.");
         }
+
+        // Ελέγχουμε αν η εργασία πρέπει να γίνει DELAYED (σε περίπτωση που άλλαξε deadline)
+        task.checkIfShouldBeDelayed();
     }
 
     /**
