@@ -30,10 +30,10 @@ public class MainApplication extends Application {
     // Αναφορά στο TableView των tasks (για να το ανανεώνουμε σε φίλτρα κ.λπ.)
     private TableView<Task> tasksTable;
 
-    // Ειδική “dummy” κατηγορία για την επιλογή "All Categories"
+    // Ειδική “dummy” κατηγορία για την επιλογή "All Categories" στο Tasks tab
     private Category allCategoryPlaceholder;
 
-    // Το ComboBox για το filter
+    // Το ComboBox για το filter στο Tasks tab
     private ComboBox<Category> cmbFilterCategory;
 
     // Θα διατηρούμε μια ξεχωριστή λίστα που περιέχει:
@@ -380,7 +380,7 @@ public class MainApplication extends Application {
             dataManager.createCategory(txtCategoryName.getText());
             txtCategoryName.clear();
 
-            // Ανανεώνουμε το φίλτρο
+            // Ανανεώνουμε το φίλτρο (Tasks tab)
             updateFilterCategoriesList();
         });
 
@@ -652,8 +652,20 @@ public class MainApplication extends Application {
         TextField txtTitle = new TextField();
         txtTitle.setPromptText("Search by title (partial)");
 
-        ComboBox<Category> cmbCategory = new ComboBox<>(dataManager.getObservableCategories());
-        cmbCategory.setPromptText("Category (optional)");
+        // Δημιουργούμε 2 "placeholder" κατηγορίες: ALL (no filter) και NONE (tasks χωρίς κατηγορία)
+        Category allCategoryPlaceholder = new Category("All (No Filter)");
+        allCategoryPlaceholder.setId("ALL");
+        Category noneCategoryPlaceholder = new Category("No Category");
+        noneCategoryPlaceholder.setId("NONE");
+
+        // Συνδυάζουμε σε ένα combo τις δύο placeholder + όλες τις πραγματικές
+        ObservableList<Category> searchCategories = FXCollections.observableArrayList();
+        searchCategories.add(allCategoryPlaceholder);
+        searchCategories.add(noneCategoryPlaceholder);
+        searchCategories.addAll(dataManager.getObservableCategories());
+
+        ComboBox<Category> cmbCategory = new ComboBox<>(searchCategories);
+        cmbCategory.setPromptText("Category");
         cmbCategory.setConverter(ConverterUtils.getCategoryConverter());
 
         ComboBox<Priority> cmbPriority = new ComboBox<>(dataManager.getObservablePriorities());
@@ -679,7 +691,7 @@ public class MainApplication extends Application {
         colCat.setCellValueFactory(cell -> {
             String cid = cell.getValue().getCategoryId();
             Category c = dataManager.findCategoryById(cid);
-            return new SimpleStringProperty(c != null ? c.getName() : "??");
+            return new SimpleStringProperty(c != null ? c.getName() : "");
         });
 
         TableColumn<Task, String> colDeadline = new TableColumn<>("Deadline");
@@ -695,13 +707,30 @@ public class MainApplication extends Application {
             Priority prio = cmbPriority.getValue();
             String titleFilter = txtTitle.getText();
 
-            List<Task> results = dataManager.searchTasks(titleFilter, cat, prio);
+            // Αν το cat είναι null ή "ALL", δεν εφαρμόζουμε φίλτρο κατηγορίας.
+            // Αν είναι "NONE", φέρνουμε μόνο tasks χωρίς κατηγορία.
+            // Αλλιώς, φέρνουμε tasks της συγκεκριμένης κατηγορίας.
+            List<Task> results;
+            if (cat == null || "ALL".equals(cat.getId())) {
+                // no category filter
+                results = dataManager.searchTasks(titleFilter, null, prio);
+            } else if ("NONE".equals(cat.getId())) {
+                // tasks with no category
+                results = dataManager.searchTasksNoCategory(titleFilter, prio);
+            } else {
+                // real category
+                results = dataManager.searchTasks(titleFilter, cat, prio);
+            }
+
             table.setItems(FXCollections.observableArrayList(results));
         });
 
         box.getChildren().addAll(
                 new Label("Search Criteria:"),
-                txtTitle, cmbCategory, cmbPriority, btnSearch,
+                txtTitle,
+                cmbCategory,
+                cmbPriority,
+                btnSearch,
                 new Label("Results:"),
                 table
         );

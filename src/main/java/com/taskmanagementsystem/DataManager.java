@@ -360,6 +360,7 @@ public class DataManager {
      * - The task must not be COMPLETED
      * - If type != SPECIFIC_DATE, the task must have a deadline
      * - The computed or specified reminder date must not be in the past
+     * - Αν είναι SPECIFIC_DATE, πρέπει να είναι πριν το deadline και >= σήμερα
      *
      * @param task the Task
      * @param type the ReminderType (ONE_DAY_BEFORE, etc.)
@@ -397,8 +398,15 @@ public class DataManager {
                 reminderDate = customDate;
         }
 
-        if (reminderDate != null && reminderDate.isBefore(LocalDate.now())) {
+        // Έλεγχος: να μην είναι στο παρελθόν και (αν SPECIFIC_DATE) να μην είναι >= deadline
+        if (reminderDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Reminder date cannot be in the past.");
+        }
+        // Αν είναι specific, βεβαιωνόμαστε ότι είναι πριν το deadline (strictly)
+        if (type == ReminderType.SPECIFIC_DATE && deadline != null) {
+            if (!reminderDate.isBefore(deadline)) {
+                throw new IllegalArgumentException("Reminder date must be strictly before the Task's deadline.");
+            }
         }
 
         Reminder reminder = new Reminder(task.getId(), type, reminderDate);
@@ -433,6 +441,10 @@ public class DataManager {
             throw new IllegalArgumentException("Reminder date cannot be empty for SPECIFIC_DATE.");
         }
 
+        if (newTask.getStatus() == TaskStatus.COMPLETED) {
+            throw new IllegalArgumentException("Cannot set reminder for a Completed task.");
+        }
+
         LocalDate deadline = newTask.getDeadline();
         if (deadline == null && newType != ReminderType.SPECIFIC_DATE) {
             throw new IllegalArgumentException("Task has no deadline, cannot set this type of reminder.");
@@ -454,8 +466,13 @@ public class DataManager {
                 reminderDate = newDate;
         }
 
-        if (reminderDate != null && reminderDate.isBefore(LocalDate.now())) {
+        if (reminderDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Reminder date cannot be in the past.");
+        }
+        if (newType == ReminderType.SPECIFIC_DATE && deadline != null) {
+            if (!reminderDate.isBefore(deadline)) {
+                throw new IllegalArgumentException("Reminder date must be strictly before the Task's deadline.");
+            }
         }
 
         reminder.setTaskId(newTask.getId());
@@ -478,8 +495,8 @@ public class DataManager {
      * Searches tasks by optional title (substring match), category, and priority.
      *
      * @param title partial title to match (ignore case)
-     * @param category category to match (or null)
-     * @param priority priority to match (or null)
+     * @param category category to match (or null => no filter)
+     * @param priority priority to match (or null => no filter)
      * @return a List of Task objects matching the given criteria
      */
     public List<Task> searchTasks(String title, Category category, Priority priority) {
@@ -499,6 +516,32 @@ public class DataManager {
                 matchPriority = priority.getId().equals(task.getPriorityId());
             }
             return matchTitle && matchCategory && matchPriority;
+        }).toList();
+    }
+
+    /**
+     * Αναζήτηση αποκλειστικά για tasks που ΔΕΝ έχουν κατηγορία,
+     * με επιπλέον φίλτρο προαιρετικού τίτλου (partial) και προαιρετικού priority.
+     *
+     * @param title partial title
+     * @param priority (ή null -> no filter)
+     * @return λίστα με tasks χωρίς categoryId
+     */
+    public List<Task> searchTasksNoCategory(String title, Priority priority) {
+        return tasks.stream().filter(task -> {
+            boolean matchTitle = true;
+            boolean matchPriority = true;
+            boolean hasNoCategory = (task.getCategoryId() == null);
+
+            if (title != null && !title.isEmpty()) {
+                matchTitle = task.getTitle() != null
+                        && task.getTitle().toLowerCase().contains(title.toLowerCase());
+            }
+            if (priority != null) {
+                matchPriority = priority.getId().equals(task.getPriorityId());
+            }
+
+            return hasNoCategory && matchTitle && matchPriority;
         }).toList();
     }
 
