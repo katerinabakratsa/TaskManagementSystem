@@ -164,6 +164,8 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
+        
+
         // Δημιουργούμε την placeholder κατηγορία
         allCategoryPlaceholder = new Category("All Categories");
         allCategoryPlaceholder.setId("ALL");
@@ -208,6 +210,9 @@ public class MainApplication extends Application {
         VBox formBox = new VBox(10);
         formBox.setPadding(new Insets(5));
 
+        
+    
+
         TextField txtTitle = new TextField();
         txtTitle.setPromptText("Title");
         TextField txtDesc = new TextField();
@@ -226,6 +231,104 @@ public class MainApplication extends Application {
 
         ComboBox<TaskStatus> cmbStatus = new ComboBox<>(FXCollections.observableArrayList(TaskStatus.values()));
         cmbStatus.setPromptText("Status");
+
+        cmbCategory.setButtonCell(new ListCell<Category>() {
+            @Override
+            protected void updateItem(Category item, boolean empty) {
+                super.updateItem(item, empty);
+        
+                if (empty || item == null) {
+                    // Όταν δεν υπάρχει επιλεγμένο στοιχείο
+                    setText("Select Category");
+                } else {
+                    // Όταν υπάρχει επιλεγμένο στοιχείο
+                    setText(item.getName());
+                }
+            }
+        });
+        
+        // Επίσης, ορίζουμε πώς θα εμφανίζονται οι τιμές μέσα στη λίστα (dropdown)
+        cmbCategory.setCellFactory(listView -> new ListCell<Category>() {
+            @Override
+            protected void updateItem(Category item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
+            }
+        });
+
+        cmbPriority.setButtonCell(new ListCell<Priority>() {
+            @Override
+            protected void updateItem(Priority item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Select Priority");
+                } else {
+                    setText(item.getName());  // ή όποιο πεδίο θες να εμφανίσεις
+                }
+            }
+        });
+
+        
+        cmbPriority.setCellFactory(listView -> new ListCell<Priority>() {
+            @Override
+            protected void updateItem(Priority item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getName());
+                }
+            }
+        });
+
+        
+        cmbStatus.setButtonCell(new ListCell<TaskStatus>() {
+            @Override
+            protected void updateItem(TaskStatus item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Status");
+                } else {
+                    setText(item.name()); // ή item.toString(), όπως σε βολεύει
+                }
+            }
+        });
+
+        cmbStatus.setCellFactory(listView -> new ListCell<TaskStatus>() {
+            @Override
+            protected void updateItem(TaskStatus item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.name());
+                }
+            }
+        });
+        
+        Button btnNewTask = new Button("Create New Task");
+        btnNewTask.setOnAction(e -> {
+            // Επαναφορά όλων των πεδίων
+            txtTitle.clear();
+            txtDesc.clear();
+            cmbCategory.setValue(null);
+            cmbCategory.setPromptText("Search Category");
+            cmbPriority.setValue(null);
+            cmbPriority.setPromptText("Search Priority");
+            dpDeadline.setValue(null);
+            cmbStatus.setValue(null);
+
+            tasksTable.getSelectionModel().clearSelection();
+        });
+
+        // 2) Προσθέτεις το κουμπί πρώτο στη λίστα στοιχείων του formBox
+    formBox.getChildren().add(btnNewTask);
+    
+        
 
         Button btnAdd = new Button("Add");
         btnAdd.setOnAction(e -> {
@@ -257,6 +360,7 @@ public class MainApplication extends Application {
                 showAlert("Error", "Could not create task: " + ex.getMessage());
             }
         });
+
 
         Button btnUpdate = new Button("Update");
         btnUpdate.setOnAction(e -> {
@@ -362,6 +466,8 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
+        
+
         ListView<Category> listView = new ListView<>(dataManager.getObservableCategories());
         listView.setCellFactory(param -> new ListCell<>() {
             @Override
@@ -380,6 +486,7 @@ public class MainApplication extends Application {
 
         TextField txtCategoryName = new TextField();
         txtCategoryName.setPromptText("New category name");
+
 
         Button btnAdd = new Button("Add Category");
         btnAdd.setOnAction(e -> {
@@ -521,6 +628,7 @@ public class MainApplication extends Application {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
 
+
         TableView<Reminder> table = new TableView<>();
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.getStyleClass().add("table-view");
@@ -547,17 +655,67 @@ public class MainApplication extends Application {
         VBox formBox = new VBox(10);
         formBox.setPadding(new Insets(5));
 
+        
+
         ComboBox<Task> cmbTask = new ComboBox<>(dataManager.getObservableTasks());
         cmbTask.setPromptText("Select Task");
         cmbTask.setConverter(ConverterUtils.getTaskConverter());
 
+        cmbTask.setButtonCell(new ListCell<Task>() {
+            @Override
+            protected void updateItem(Task item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Select Task");
+                } else {
+                    setText(item.getTitle());
+                }
+            }
+        });
+        cmbTask.setCellFactory(listView -> new ListCell<Task>() {
+            @Override
+            protected void updateItem(Task item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getTitle());
+                }
+            }
+        });
+        
+        // -- ReminderType
         ComboBox<ReminderType> cmbType = new ComboBox<>(FXCollections.observableArrayList(ReminderType.values()));
         cmbType.setPromptText("Select Reminder Type");
+
+        
+        cmbType.setButtonCell(new ListCell<ReminderType>() {
+            @Override
+            protected void updateItem(ReminderType item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("Select Reminder Type");
+                } else {
+                    setText(item.name());
+                }
+            }
+        });
+        cmbType.setCellFactory(listView -> new ListCell<ReminderType>() {
+            @Override
+            protected void updateItem(ReminderType item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    setText(item.name());
+                }
+            }
+        });
 
         DatePicker dpCustomDate = new DatePicker();
         dpCustomDate.setPromptText("Select Date");
         dpCustomDate.setDisable(true);
-
+        
         // SPECIFIC_DATE -> ενεργοποιείται το DatePicker
         cmbType.setOnAction(e -> {
             dpCustomDate.setDisable(cmbType.getValue() != ReminderType.SPECIFIC_DATE);
@@ -565,6 +723,20 @@ public class MainApplication extends Application {
                 dpCustomDate.setValue(null);
             }
         });
+
+        Button btnNewReminder = new Button("Create New Reminder");
+        btnNewReminder.setOnAction(e -> {
+            // Επαναφορά όλων των πεδίων
+            cmbTask.setValue(null);
+            cmbType.setValue(null);
+            dpCustomDate.setValue(null);
+            dpCustomDate.setDisable(true); // απενεργοποιούμε ξανά το DatePicker
+
+            table.getSelectionModel().clearSelection();
+        });
+        
+        formBox.getChildren().add(btnNewReminder);
+
 
         Button btnAdd = new Button("Add Reminder");
         btnAdd.setOnAction(e -> {
