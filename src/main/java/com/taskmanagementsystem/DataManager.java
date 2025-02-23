@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.*;
+import com.taskmanagementsystem.Category;
 
 /**
  * Central class that manages all categories, priorities, tasks, and reminders.
@@ -21,6 +22,12 @@ import java.util.*;
  *  - Reassigning "Default" priority if a priority is removed
  *  - Checking and updating "Delayed" tasks if their deadline is passed
  */
+
+ /**
+     * Default constructor.
+     * Initializes an empty DataManager instance.
+     * Data is loaded from JSON files using {@link #loadAllData()}.
+     */
 public class DataManager {
     private static final String MEDIALAB_FOLDER = "medialab";
     private static final String CATEGORIES_FILE = MEDIALAB_FOLDER + "/categories.json";
@@ -94,9 +101,11 @@ public class DataManager {
         updateDelayedTasks();
     }
 
-    /**
+     /**
      * Saves all data (categories, priorities, tasks, reminders)
      * into separate JSON files in the "medialab" folder.
+     *
+     * @throws IOException if there is an issue writing to a file.
      */
     public void saveAllData() {
         ObjectMapper mapper = new ObjectMapper();
@@ -426,13 +435,14 @@ public class DataManager {
     }
 
     /**
-     * Updates an existing Reminder with new Task, type, and date constraints.
+     * Updates an existing Reminder with a new Task, type, and date constraints.
      *
      * @param reminder the Reminder to update
      * @param newTask the new Task to associate with
      * @param newType the new ReminderType
      * @param newDate the new LocalDate if type == SPECIFIC_DATE
      * @throws IllegalArgumentException if the date is invalid or in the past
+     * @throws IllegalArgumentException if trying to set a reminder for a Completed task
      */
     public void updateReminder(Reminder reminder,
                                Task newTask,
@@ -611,7 +621,8 @@ public class DataManager {
     }
 
     /**
-     * Checks if any tasks need to be labeled "DELAYED" (deadline passed, not completed).
+     * Checks all tasks to determine if they should be marked as "DELAYED".
+     * If a task has a past deadline and is not "COMPLETED", its status is updated to "DELAYED".
      */
     private void updateDelayedTasks() {
         for (Task t : tasks) {

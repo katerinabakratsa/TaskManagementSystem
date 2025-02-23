@@ -1,16 +1,26 @@
 [ {
-  "id" : "282f7954-83a1-455e-840c-7b159894fa41",
-  "taskId" : "f324a106-370f-4dcf-ab32-13b1ab7303bd",
+  "id" : "3be289f6-deaf-47db-9ad8-fcb7f4be0861",
+  "taskId" : "32c4e802-58a6-4bc4-82a3-656a1fc7272b",
   "type" : "ONE_DAY_BEFORE",
-  "reminderDate" : [ 2025, 2, 27 ]
+  "reminderDate" : [ 2026, 2, 27 ]
 }, {
-  "id" : "192711e0-079d-4b4c-b2b1-f6966080a309",
-  "taskId" : "f324a106-370f-4dcf-ab32-13b1ab7303bd",
-  "type" : "ONE_DAY_BEFORE",
-  "reminderDate" : [ 2025, 2, 27 ]
+  "id" : "9e6569f6-0c8f-4f99-a912-f1297058fb50",
+  "taskId" : "32c4e802-58a6-4bc4-82a3-656a1fc7272b",
+  "type" : "ONE_WEEK_BEFORE",
+  "reminderDate" : [ 2026, 2, 21 ]
 }, {
-  "id" : "36b03cf1-60e3-4e32-95e5-bfc68c13ff6e",
-  "taskId" : "f324a106-370f-4dcf-ab32-13b1ab7303bd",
+  "id" : "6b41856c-6324-4e38-8013-a55ddccdfbe1",
+  "taskId" : "edaf3f99-8222-412d-82c2-4523b819fa4a",
   "type" : "ONE_DAY_BEFORE",
-  "reminderDate" : [ 2025, 2, 27 ]
+  "reminderDate" : [ 2028, 2, 9 ]
+}, {
+  "id" : "ea6a01d6-d185-45ec-9e50-15d6cd95f148",
+  "taskId" : "edaf3f99-8222-412d-82c2-4523b819fa4a",
+  "type" : "ONE_MONTH_BEFORE",
+  "reminderDate" : [ 2028, 1, 10 ]
+}, {
+  "id" : "032d0be9-a002-411b-931a-8fa6cb591c63",
+  "taskId" : "edaf3f99-8222-412d-82c2-4523b819fa4a",
+  "type" : "SPECIFIC_DATE",
+  "reminderDate" : [ 2027, 2, 18 ]
 } ]

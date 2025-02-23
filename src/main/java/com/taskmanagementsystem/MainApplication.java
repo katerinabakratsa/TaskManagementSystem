@@ -14,9 +14,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import javafx.scene.control.Label;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.ListView;
 
 public class MainApplication extends Application {
 
@@ -169,6 +174,18 @@ public class MainApplication extends Application {
         lblCompletedTasks.setText("Completed tasks: " + completed);
         lblDelayedTasks.setText("Delayed tasks: " + delayed);
         lblDeadline7Days.setText("Due <= 7 days: " + dueIn7);
+    }
+
+    private void updateSearchPrioritiesList() {
+        // Δημιουργούμε μία νέα συνδυασμένη λίστα για Priorities
+        ObservableList<Priority> combinedPriorities = FXCollections.observableArrayList();
+        Priority allPriorityPlaceholder = new Priority("All Priorities");
+        allPriorityPlaceholder.setId("ALL");
+        combinedPriorities.add(allPriorityPlaceholder);
+        combinedPriorities.addAll(dataManager.getObservablePriorities());
+        
+        // Ενημερώνουμε το ComboBox στο Search tab
+        cmbSearchPriority.setItems(combinedPriorities);
     }
 
     // ---------------------------------------------------------------
@@ -544,6 +561,7 @@ tasksTable.setItems(tasksFilteredList);
             txtCategoryName.clear();
             refreshAllTablesAndCounters();
             updateFilterCategoriesList();
+            updateSearchPrioritiesList();
         });
 
         Button btnRename = new Button("Rename Category");
@@ -637,6 +655,7 @@ tasksTable.setItems(tasksFilteredList);
             dataManager.createPriority(txtPrioName.getText());
             txtPrioName.clear();
             refreshAllTablesAndCounters();
+            updateSearchPrioritiesList();
         });
 
         Button btnRename = new Button("Rename Priority");
@@ -651,6 +670,7 @@ tasksTable.setItems(tasksFilteredList);
             listView.refresh();
             txtPrioName.clear();
             refreshAllTablesAndCounters();
+            updateSearchPrioritiesList();
         });
 
         Button btnDelete = new Button("Delete Priority");
@@ -668,6 +688,7 @@ tasksTable.setItems(tasksFilteredList);
             // ανατίθενται σε default. Καλούμε refreshAllTablesAndCounters()
             // για άμεση ενημέρωση στην οθόνη.
             refreshAllTablesAndCounters();
+            updateSearchPrioritiesList();
         });
 
         // Αν είναι το “Default”, κρύβουμε Rename/Delete
@@ -915,9 +936,17 @@ cmbSearchCategory.setPromptText("Category");
 cmbSearchCategory.setConverter(ConverterUtils.getCategoryConverter());
 
 
-        cmbSearchPriority = new ComboBox<>(dataManager.getObservablePriorities());
-        cmbSearchPriority.setPromptText("Priority (optional)");
-        cmbSearchPriority.setConverter(ConverterUtils.getPriorityConverter());
+        // Δημιουργούμε μία συνδυασμένη λίστα για Priorities με την dummy επιλογή "All Priorities"
+ObservableList<Priority> combinedPriorities = FXCollections.observableArrayList();
+Priority allPriorityPlaceholder = new Priority("All Priorities");
+allPriorityPlaceholder.setId("ALL");
+combinedPriorities.add(allPriorityPlaceholder);
+combinedPriorities.addAll(dataManager.getObservablePriorities());
+
+// Δημιουργία του ComboBox με τη νέα λίστα
+cmbSearchPriority = new ComboBox<>(combinedPriorities);
+cmbSearchPriority.setPromptText("Priority (optional)");
+cmbSearchPriority.setConverter(ConverterUtils.getPriorityConverter());
 
         // Χρησιμοποιούμε FilteredList ώστε οι αλλαγές στα tasks να εμφανίζονται αυτόματα
         filteredTasks = new FilteredList<>(dataManager.getObservableTasks(), t -> true);
@@ -1011,7 +1040,7 @@ colCat.setCellValueFactory(cell -> {
                 }
             }
             // Έλεγχος priority (αν επιλεγεί)
-            if (prio != null) {
+            if (prio != null && !"ALL".equals(prio.getId())) {
                 if (!prio.getId().equals(task.getPriorityId())) {
                     return false;
                 }
@@ -1049,6 +1078,8 @@ colCat.setCellValueFactory(cell -> {
         if (filteredTasks != null) {
             applySearchFilter();
         }
+        updateSearchPrioritiesList();
+
     }
 
     public static void main(String[] args) {
