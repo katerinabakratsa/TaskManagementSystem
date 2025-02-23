@@ -47,11 +47,25 @@ public class MainApplication extends Application {
     private ComboBox<Priority> cmbSearchPriority;
     private TableView<Task> searchTable;         // πίνακας αναζήτησης
     private FilteredList<Task> filteredTasks;    // φίλτρο αναζήτησης πάνω στα tasks
+    private FilteredList<Task> tasksFilteredList;
+
 
     @Override
     public void start(Stage primaryStage) {
         // 1. Load data from JSON
         dataManager.loadAllData();
+
+        tasksFilteredList = new FilteredList<>(dataManager.getObservableTasks(), t -> true);
+
+
+        for (Task task : dataManager.getObservableTasks()) {
+            task.priorityIdProperty().addListener((obs, oldVal, newVal) -> {
+                tasksFilteredList.setPredicate(t -> true);
+            });
+            task.categoryIdProperty().addListener((obs, oldVal, newVal) -> {
+                tasksFilteredList.setPredicate(t -> true);
+            });
+        }
 
         // 2. Ενημέρωση εκπρόθεσμων εργασιών
         for (Task task : dataManager.getAllTasks()) {
@@ -184,6 +198,20 @@ public class MainApplication extends Application {
         cmbFilterCategory.setValue(allCategoryPlaceholder); // Αρχικά εμφανίζει “All Categories”
         cmbFilterCategory.setConverter(ConverterUtils.getCategoryConverter());
 
+        cmbFilterCategory.setButtonCell(new ListCell<Category>() {
+            @Override
+    protected void updateItem(Category item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+            textProperty().unbind();
+            setText("All Categories");
+        } else {
+            textProperty().bind(item.nameProperty());
+        }
+    }
+});
+        
+
         tasksTable = new TableView<>();
         tasksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
@@ -197,7 +225,7 @@ public class MainApplication extends Application {
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         tasksTable.getColumns().addAll(colTitle, colDesc, colStatus);
-        tasksTable.setItems(dataManager.getObservableTasks());
+tasksTable.setItems(tasksFilteredList);
 
         // Όταν αλλάξει το value στο ComboBox, φιλτράρουμε
         cmbFilterCategory.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -236,13 +264,12 @@ public class MainApplication extends Application {
             @Override
             protected void updateItem(Category item, boolean empty) {
                 super.updateItem(item, empty);
-        
                 if (empty || item == null) {
-                    // Όταν δεν υπάρχει επιλεγμένο στοιχείο
+                    textProperty().unbind();
                     setText("Select Category");
                 } else {
-                    // Όταν υπάρχει επιλεγμένο στοιχείο
-                    setText(item.getName());
+                    // Κάνουμε binding στο nameProperty ώστε να ενημερώνεται αυτόματα
+                    textProperty().bind(item.nameProperty());
                 }
             }
         });
@@ -250,38 +277,41 @@ public class MainApplication extends Application {
         // Επίσης, ορίζουμε πώς θα εμφανίζονται οι τιμές μέσα στη λίστα (dropdown)
         cmbCategory.setCellFactory(listView -> new ListCell<Category>() {
             @Override
-            protected void updateItem(Category item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getName());
-                }
+    protected void updateItem(Category item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+            textProperty().unbind();
+            setText(null);
+        } else {
+            textProperty().bind(item.nameProperty());
+        }
             }
         });
 
         cmbPriority.setButtonCell(new ListCell<Priority>() {
             @Override
-            protected void updateItem(Priority item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText("Select Priority");
-                } else {
-                    setText(item.getName());  // ή όποιο πεδίο θες να εμφανίσεις
-                }
+    protected void updateItem(Priority item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+            textProperty().unbind();
+            setText("Select Priority");
+        } else {
+            textProperty().bind(item.nameProperty());
+        }
             }
         });
 
         
         cmbPriority.setCellFactory(listView -> new ListCell<Priority>() {
             @Override
-            protected void updateItem(Priority item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                } else {
-                    setText(item.getName());
-                }
+    protected void updateItem(Priority item, boolean empty) {
+        super.updateItem(item, empty);
+        if (empty || item == null) {
+            textProperty().unbind();
+            setText(null);
+        } else {
+            textProperty().bind(item.nameProperty());
+        }
             }
         });
 
@@ -431,18 +461,19 @@ public class MainApplication extends Application {
      */
     private void applyCategoryFilter() {
         Category selectedCat = cmbFilterCategory.getValue();
-        if (selectedCat == null || "ALL".equals(selectedCat.getId())) {
-            // "All Categories"
-            tasksTable.setItems(dataManager.getObservableTasks());
-        } else {
-            // Φιλτράρουμε
-            List<Task> filtered = dataManager.getAllTasks().stream()
-                    .filter(t -> selectedCat.getId().equals(t.getCategoryId()))
-                    .collect(Collectors.toList());
-            tasksTable.setItems(FXCollections.observableArrayList(filtered));
-        }
-        tasksTable.refresh();
+    if (selectedCat == null || "ALL".equals(selectedCat.getId())) {
+        // Καταργούμε το φιλτράρισμα
+        tasksFilteredList.setPredicate(t -> true);
+    } else {
+        // Ορίζουμε predicate για να δείχνει μόνο τα tasks της συγκεκριμένης κατηγορίας
+        tasksFilteredList.setPredicate(t -> {
+            if (t.getCategoryId() == null) return false;
+            return selectedCat.getId().equals(t.getCategoryId());
+        });
     }
+    // **Δεν** κάνουμε setItems ή tasksTable.setItems(...) εδώ.
+    tasksTable.refresh();
+}
 
     /**
      * Ανανεώνει τη λίστα combinedFilterCategories,
@@ -465,7 +496,6 @@ public class MainApplication extends Application {
     private Pane createCategoriesPane() {
         BorderPane pane = new BorderPane();
         pane.setPadding(new Insets(10));
-
         
 
         ListView<Category> listView = new ListView<>(dataManager.getObservableCategories());
@@ -481,11 +511,30 @@ public class MainApplication extends Application {
             }
         });
 
+        
+
         VBox formBox = new VBox(10);
         formBox.setPadding(new Insets(5));
 
         TextField txtCategoryName = new TextField();
         txtCategoryName.setPromptText("New category name");
+
+           // Όταν ο χρήστης επιλέγει μια κατηγορία από το listView,
+    // γεμίζουμε αυτόματα το TextField με το όνομα της κατηγορίας.
+    listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        if (newVal != null) {
+            txtCategoryName.setText(newVal.getName());
+        }
+    });
+
+    // --- ΝΕΟ ΚΟΥΜΠΙ: Create New Category ---
+    Button btnNewCategory = new Button("Create New Category");
+    btnNewCategory.setOnAction(e -> {
+        // Καθαρίζουμε το TextField
+        txtCategoryName.clear();
+        // Αφαιρούμε οποιαδήποτε επιλογή από το ListView
+        listView.getSelectionModel().clearSelection();
+    });
 
 
         Button btnAdd = new Button("Add Category");
@@ -506,6 +555,7 @@ public class MainApplication extends Application {
             }
             if (txtCategoryName.getText().isEmpty()) return;
             dataManager.renameCategory(selected, txtCategoryName.getText());
+            listView.refresh();
             txtCategoryName.clear();
             refreshAllTablesAndCounters();
             updateFilterCategoriesList();
@@ -523,6 +573,9 @@ public class MainApplication extends Application {
             refreshAllTablesAndCounters();
             updateFilterCategoriesList();
         });
+
+         // --- 3. Τοποθέτησε το "Create New Category" πρώτο στο formBox ---
+    formBox.getChildren().add(btnNewCategory);
 
         formBox.getChildren().addAll(
                 new Label("Category Name:"),
@@ -562,6 +615,22 @@ public class MainApplication extends Application {
         TextField txtPrioName = new TextField();
         txtPrioName.setPromptText("Priority name");
 
+        // --- 1. Όταν επιλέγουμε ένα priority στη λίστα, γεμίζουμε το TextField ---
+    listView.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+        if (newVal != null) {
+            txtPrioName.setText(newVal.getName());
+        }
+    });
+
+    // --- 2. Κουμπί "Create New Priority" επάνω-επάνω, όπως στο "Create New Task" ---
+    Button btnNewPriority = new Button("Create New Priority");
+    btnNewPriority.setOnAction(e -> {
+        // Καθαρίζουμε το TextField
+        txtPrioName.clear();
+        // Αφαιρούμε οποιαδήποτε επιλογή από το ListView
+        listView.getSelectionModel().clearSelection();
+    });
+
         Button btnAdd = new Button("Add Priority");
         btnAdd.setOnAction(e -> {
             if (txtPrioName.getText().isEmpty()) return;
@@ -579,6 +648,7 @@ public class MainApplication extends Application {
             }
             if (txtPrioName.getText().isEmpty()) return;
             dataManager.renamePriority(selected, txtPrioName.getText());
+            listView.refresh();
             txtPrioName.clear();
             refreshAllTablesAndCounters();
         });
@@ -591,6 +661,8 @@ public class MainApplication extends Application {
                 return;
             }
             dataManager.deletePriority(selected);
+            tasksTable.refresh();
+
             showAlert("Success", "Priority deleted or replaced with Default in tasks.");
             // Με το που γίνεται εδώ η διαγραφή, όσα tasks είχαν το priority 
             // ανατίθενται σε default. Καλούμε refreshAllTablesAndCounters()
@@ -608,6 +680,8 @@ public class MainApplication extends Application {
                 btnDelete.setVisible(true);
             }
         });
+
+        formBox.getChildren().add(btnNewPriority);
 
         formBox.getChildren().addAll(
                 new Label("Priority:"),
@@ -836,21 +910,10 @@ public class MainApplication extends Application {
         txtSearchTitle = new TextField();
         txtSearchTitle.setPromptText("Search by title (partial)");
 
-        // Δημιουργούμε 2 "placeholder" κατηγορίες: ALL (no filter) και NONE (tasks χωρίς κατηγορία)
-        Category allCategoryPlaceholder = new Category("All (No Filter)");
-        allCategoryPlaceholder.setId("ALL");
-        Category noneCategoryPlaceholder = new Category("No Category");
-        noneCategoryPlaceholder.setId("NONE");
+cmbSearchCategory = new ComboBox<>(combinedFilterCategories);
+cmbSearchCategory.setPromptText("Category");
+cmbSearchCategory.setConverter(ConverterUtils.getCategoryConverter());
 
-        // Συνδυάζουμε σε ένα combo τις δύο placeholder + όλες τις πραγματικές
-        ObservableList<Category> searchCategories = FXCollections.observableArrayList();
-        searchCategories.add(allCategoryPlaceholder);
-        searchCategories.add(noneCategoryPlaceholder);
-        searchCategories.addAll(dataManager.getObservableCategories());
-
-        cmbSearchCategory = new ComboBox<>(searchCategories);
-        cmbSearchCategory.setPromptText("Category");
-        cmbSearchCategory.setConverter(ConverterUtils.getCategoryConverter());
 
         cmbSearchPriority = new ComboBox<>(dataManager.getObservablePriorities());
         cmbSearchPriority.setPromptText("Priority (optional)");
@@ -867,17 +930,26 @@ public class MainApplication extends Application {
 
         TableColumn<Task, String> colPrio = new TableColumn<>("Priority");
         colPrio.setCellValueFactory(cell -> {
+            // Λαμβάνουμε το priorityId ως observable property
             String pid = cell.getValue().getPriorityId();
             Priority p = dataManager.findPriorityById(pid);
-            return new SimpleStringProperty(p != null ? p.getName() : "??");
+            if (p != null) {
+                return p.nameProperty();
+            } else {
+                return new SimpleStringProperty("");
+            }
         });
 
         TableColumn<Task, String> colCat = new TableColumn<>("Category");
-        colCat.setCellValueFactory(cell -> {
-            String cid = cell.getValue().getCategoryId();
-            Category c = dataManager.findCategoryById(cid);
-            return new SimpleStringProperty(c != null ? c.getName() : "");
-        });
+colCat.setCellValueFactory(cell -> {
+    String cid = cell.getValue().getCategoryId();
+    Category c = dataManager.findCategoryById(cid);
+    if (c != null) {
+        return c.nameProperty(); // Επιστρέφουμε το property για binding
+    } else {
+        return new SimpleStringProperty("");
+    }
+});
 
         TableColumn<Task, String> colDeadline = new TableColumn<>("Deadline");
         colDeadline.setCellValueFactory(cell -> {

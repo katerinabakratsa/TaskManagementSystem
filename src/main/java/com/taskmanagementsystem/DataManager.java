@@ -232,12 +232,11 @@ public class DataManager {
     public void deletePriority(Priority priority) {
         Priority def = getDefaultPriority();
         if (priority.getId().equals(def.getId())) {
-            return; // can't remove default
+            return; // Δεν επιτρέπεται η διαγραφή του default
         }
-        // reassign tasks
         for (Task t : tasks) {
             if (t.getPriorityId().equals(priority.getId())) {
-                t.setPriorityId(def.getId());
+                t.setPriorityId(def.getId()); // Με αυτό το setPriorityId το binding θα ενημερώσει το UI
             }
         }
         priorities.remove(priority);

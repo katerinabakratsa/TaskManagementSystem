@@ -1,5 +1,6 @@
 package com.taskmanagementsystem;
 
+import javafx.beans.property.SimpleStringProperty;
 import java.util.UUID;
 
 /**
@@ -7,20 +8,22 @@ import java.util.UUID;
  */
 public class Priority {
     private String id;
-    private String name;
+    private SimpleStringProperty name;
 
     // Empty constructor for JSON
     public Priority() {
+        this.id = UUID.randomUUID().toString();
+        this.name = new SimpleStringProperty("");
     }
 
     public Priority(String name) {
         this.id = UUID.randomUUID().toString();
-        this.name = name;
+        this.name = new SimpleStringProperty(name);
     }
 
     public Priority(String id, String name) {
         this.id = id;
-        this.name = name;
+        this.name = new SimpleStringProperty(name);
     }
 
     // Getters / Setters
@@ -33,10 +36,14 @@ public class Priority {
     }
 
     public String getName() {
-        return name;
+        return name.get();
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.name.set(name);
+    }
+
+    public SimpleStringProperty nameProperty() {
+        return name;
     }
 }
