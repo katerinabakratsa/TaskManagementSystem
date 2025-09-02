@@ -14,7 +14,7 @@ This is a task management application developed as part of a project for the Mul
 - Defining (and automatically handling) reminders.
 - Easily searching for tasks based on multiple criteria.
 
-> All data is stored in JSON files located in a folder named `medialab`, allowing safe and easy transfer/modification of information.
+> All data is stored in JSON files located in a folder named `medialab`, making it easy and safe to transfer or modify information.
 
 
 ---
@@ -23,12 +23,12 @@ This is a task management application developed as part of a project for the Mul
 ## Technologies Used
 - **Java 8+**: Main programming language.
 - **JavaFX**: For the graphical user interface (GUI).
-- **JSON αρχεία**: For storing and retrieving data in text format.
+- **JSON files**: For storing and retrieving data in text format.
 - **Javadoc**: For documenting public methods in specific classes.
 
 ---
 
-## Installation & Setup Instructions 🔧
+## Installation & Setup 🔧
 1. **Java 21 or newer** installed on your system.
 2. **JavaFX** (may require separate installation depending on your Java version).
 3. **Maven** (for compilation and execution).
@@ -39,10 +39,10 @@ This is a task management application developed as part of a project for the Mul
 ## User Guide 📝
 
 ### Launching the Application
-- Run the `Main` class or the respective class containing the `main()` method.
+- Run the `Main` class or or any other class containing the `main()` method.
 
 ### Main Screen
-- At the top, you will see a summary (number of tasks, how many have been completed, etc.).
+- The top section displays a summary (number of tasks, how many have been completed, etc.).
 - The main area includes tabs/forms/buttons for:
   - **Task Management** (add, edit, delete)
   - **Category Management** (add, rename, delete) 
@@ -59,5 +59,5 @@ This is a task management application developed as part of a project for the Mul
 
 ---
 
-**Ευχαριστούμε που δοκιμάσατε το MediaLab Assistant!**  
-Καλή οργάνωση εργασιών! ✅
+**Thank you for using MediaLab Assistant!**
+Stay organized and productive! ✅
