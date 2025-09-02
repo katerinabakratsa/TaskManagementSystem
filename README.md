@@ -11,7 +11,7 @@ This is a task management application developed as part of a project for the Mul
 - Creating, editing, and deleting tasks.
 - Managing multiple categories.
 - Setting and modifying priority levels.
-- Defining (and automatically handling) reminders.
+- Setting up reminders (with automatic handling).
 - Easily searching for tasks based on multiple criteria.
 
 > All data is stored in JSON files located in a folder named `medialab`, making it easy and safe to transfer or modify information.
@@ -29,7 +29,7 @@ This is a task management application developed as part of a project for the Mul
 ---
 
 ## Installation & Setup 🔧
-1. **Java 21 or newer** installed on your system.
+1. Ensure you have **Java 21 or newer** installed on your system.
 2. **JavaFX** (may require separate installation depending on your Java version).
 3. **Maven** (for compilation and execution).
 4. Download or clone the repository from GitHub.
@@ -39,7 +39,7 @@ This is a task management application developed as part of a project for the Mul
 ## User Guide 📝
 
 ### Launching the Application
-- Run the `Main` class or or any other class containing the `main()` method.
+- Run the `Main` class or any other class containing the `main()` method.
 
 ### Main Screen
 - The top section displays a summary (number of tasks, how many have been completed, etc.).
@@ -60,4 +60,5 @@ This is a task management application developed as part of a project for the Mul
 ---
 
 **Thank you for using MediaLab Assistant!**
+
 Stay organized and productive! ✅
