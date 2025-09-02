@@ -1,56 +1,59 @@
 # Task Management System (MediaLab Assistant)
 
-Πρόκειται για μία εφαρμογή διαχείρισης εργασιών  που αναπτύχθηκε στα πλαίσια εργασίας στο μάθημα Τεχνολογία Πολυμέσων. Η εφαρμογή επιτρέπει στον χρήστη να δημιουργεί, να επεξεργάζεται και να επιβλέπει πολλαπλές εργασίες, ορίζοντας προτεραιότητες, προθεσμίες και υπενθυμίσεις για να μένει πάντα οργανωμένος. ✨
+This is a task management application developed as part of a project for the Multimedia Technology course. The application allows the user to create, edit, and monitor multiple tasks, setting priorities, deadlines, and reminders to stay organized at all times. ✨
 
 ---
 
-## Επισκόπηση
-Το **MediaLab Assistant** στοχεύει στην αποτελεσματική οργάνωση των εργασιών σας, παρέχοντας μια φιλική γραφική διεπαφή και δυνατότητες για:
-- Δημιουργία, τροποποίηση, διαγραφή εργασιών.  
-- Διαχείριση πολλαπλών κατηγοριών.  
-- Ρυθμίσεις και αλλαγές επιπέδων προτεραιότητας.  
-- Ορισμό (και αυτόματη διαχείριση) υπενθυμίσεων.  
-- Εύκολη αναζήτηση εργασιών με βάση πολλαπλά κριτήρια.
+## Overview
 
-> Όλα τα δεδομένα αποθηκεύονται σε αρχεία JSON, τα οποία βρίσκονται σε φάκελο με όνομα `medialab`, επιτρέποντας την ασφαλή και εύκολη μεταφορά/τροποποίηση των πληροφοριών.
+**MediaLab Assistant** aims to help you effectively organize your tasks, providing a user-friendly graphical interface and features for:
 
----
+- Creating, editing, and deleting tasks.
+- Managing multiple categories.
+- Setting and modifying priority levels.
+- Defining (and automatically handling) reminders.
+- Easily searching for tasks based on multiple criteria.
 
+> All data is stored in JSON files located in a folder named `medialab`, allowing safe and easy transfer/modification of information.
 
-## Τεχνολογίες που Χρησιμοποιήθηκαν
-- **Java 8+**: Βασική γλώσσα προγραμματισμού.  
-- **JavaFX**: Για τη γραφική διεπαφή χρήστη (GUI).  
-- **JSON αρχεία**: Για την αποθήκευση και ανάκτηση δεδομένων σε μορφή κειμένου.  
-- **Javadoc**: Για την τεκμηρίωση public μεθόδων σε συγκεκριμένες κλάσεις.
 
 ---
 
-## Προϋποθέσεις και Οδηγίες Εγκατάστασης (Installation & Setup) 🔧
-1. **Java 21 ή νεότερη έκδοση** εγκατεστημένη στο σύστημά σας.  
-2. **JavaFX** (σε κάποιες εκδόσεις της Java μπορεί να χρειαστεί ξεχωριστή εγκατάσταση).
-3. **Maven** (για compilation και εκτέλεση)
-4. Κατεβάστε/κλωνοποιήστε το αποθετήριο στο GitHub.  
+
+## Technologies Used
+- **Java 8+**: Main programming language.
+- **JavaFX**: For the graphical user interface (GUI).
+- **JSON αρχεία**: For storing and retrieving data in text format.
+- **Javadoc**: For documenting public methods in specific classes.
 
 ---
 
-## Οδηγίες Χρήσης 📝
+## Installation & Setup Instructions 🔧
+1. **Java 21 or newer** installed on your system.
+2. **JavaFX** (may require separate installation depending on your Java version).
+3. **Maven** (for compilation and execution).
+4. Download or clone the repository from GitHub.
 
-### Εκκίνηση Εφαρμογής
-- Τρέξτε την κλάση `Main` ή την αντίστοιχη κλάση με το `main()` method.  
+---
 
-### Κεντρική Οθόνη
-- Στο επάνω μέρος εμφανίζεται μια σύνοψη (πλήθος εργασιών, πόσες έχουν ολοκληρωθεί κτλ.).  
-- Στο κυρίως μέρος υπάρχουν καρτέλες/φόρμες/πλήκτρα για:  
-  - **Διαχείριση Εργασιών** (προσθήκη, επεξεργασία, διαγραφή)  
-  - **Διαχείριση Κατηγοριών** (προσθήκη, μετονομασία, διαγραφή)  
-  - **Διαχείριση Προτεραιοτήτων** (προσθήκη, μετονομασία, διαγραφή)  
-  - **Διαχείριση Υπενθυμίσεων** (προσθήκη, τροποποίηση, διαγραφή)  
-  - **Αναζήτηση Εργασιών** (βάσει τίτλου, κατηγορίας ή προτεραιότητας)
+## User Guide 📝
+
+### Launching the Application
+- Run the `Main` class or the respective class containing the `main()` method.
+
+### Main Screen
+- At the top, you will see a summary (number of tasks, how many have been completed, etc.).
+- The main area includes tabs/forms/buttons for:
+  - **Task Management** (add, edit, delete)
+  - **Category Management** (add, rename, delete) 
+  - **Priority Management** (add, rename, delete)
+  - **Reminder Management** (add, edit, delete)
+  - **Task Search** (by title, category, or priority)
     
-- Κατά την εκκίνηση, αν υπάρχουν εργασίες με κατάσταση `Delayed`, θα εμφανιστεί popup που ενημερώνει για τον αριθμό των εκπρόθεσμων εργασιών.
+- On startup, if there are tasks marked as `Delayed`, a popup will appear informing you of the number of overdue tasks.
 
-### Τερματισμός Εφαρμογής
-- Κλείνοντας την εφαρμογή, γίνεται αυτόματη αποθήκευση της τρέχουσας κατάστασης στα αντίστοιχα JSON αρχεία στον φάκελο `medialab`.
+### Exiting the Application
+- When closing the application, the current state is automatically saved into the corresponding JSON files inside the `medialab` folder.
 
 ---
 
